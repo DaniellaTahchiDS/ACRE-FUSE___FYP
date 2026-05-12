@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Watched History - ACRE - FUSE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-container { max-width: 900px; margin: 80px auto 40px; padding: 0 20px; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 28px; color: #facc15; margin-bottom: 5px; }
+    #movieList {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        justify-content: flex-start;
+    }
+
+    .poster-container {
+        display: inline-flex;
+        flex-direction: column;
+        width: 140px;
+        flex-shrink: 0;
+        gap: 8px;
+    }
+
+    .poster-container img {
+        width: 100%;
+        aspect-ratio: 2/3;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid #2a2a2e;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .poster-container img:hover {
+        border-color: #facc15;
+        transform: scale(1.05);
+    }
+
+    .poster-btn {
+        background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; border-radius: 6px;
+        padding: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        text-align: center; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .poster-btn:hover { background: #3f3f46; border-color: #facc15; color: #facc15; }
+    .poster-btn.danger { color: #ef4444; border-color: #7f1d1d; }
+    .poster-btn.danger:hover { background: #7f1d1d; color: white; border-color: #ef4444; }
+
+    .rating { color: #facc15; font-size: 12px; margin-top: 4px; text-align: center; }
+
+    .load-more-btn {
+        width: 100%;
+        padding: 16px;
+        margin-top: 30px;
+        background: rgba(26, 26, 30, 0.6);
+        border: 1px solid rgba(250, 204, 21, 0.3);
+        border-radius: 12px;
+        color: #facc15;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        backdrop-filter: blur(10px);
+    }
+
+    .load-more-btn:hover {
+        background: rgba(250, 204, 21, 0.1);
+        border-color: #facc15;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(250, 204, 21, 0.15);
+    }
+
+    .load-more-btn:active {
+        transform: translateY(0);
+    }
+
+    .load-more-btn i {
+        font-size: 12px;
+        transition: transform 0.3s ease;
+    }
+
+    .load-more-btn:hover i {
+        transform: translateY(3px);
+    }
+    
+    .skeleton-container {
+        display: inline-flex;
+        flex-direction: column;
+        width: 140px;
+        gap: 8px;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .skeleton-poster { width: 100%; aspect-ratio: 2/3; background: #27272a; border-radius: 8px; }
+    .skeleton-btn { height: 28px; background: #27272a; border-radius: 6px; }
+
+    .movie-modal { background-color: #1a1a1e; border: 1px solid #333; border-radius: 12px; max-width: 600px; overflow: hidden; color: white; }
+    .modal-poster { width: 150px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-eye" style="margin-right: 8px;"></i>Watched History</h1>
+            <p class="text-muted" style="font-size: 13px; margin: 0;">Movies you've already seen and rated</p>
+        </div>
+        <a href="{{ url_for('account') }}" class="pill-btn" style="text-decoration: none;">
+            <i class="fa-solid fa-arrow-left"></i> Account
+        </a>
+    </div>
+
+    <div id="movieList"></div>
+    <div id="loadingSkeletons" style="display: none; display: flex; flex-wrap: wrap; gap: 16px;">
+        <div class="skeleton-container"><div class="skeleton-poster"></div><div class="skeleton-btn"></div></div>
+        <div class="skeleton-container"><div class="skeleton-poster"></div><div class="skeleton-btn"></div></div>
+        <div class="skeleton-container"><div class="skeleton-poster"></div><div class="skeleton-btn"></div></div>
+    </div>
+    <button id="loadMoreBtn" class="load-more-btn" style="display: none;" onclick="loadMore()">
+        <i class="fa-solid fa-chevron-down" style="margin-right: 8px;"></i>Load More
+    </button>
+</div>
+
+<!-- Movie Info Modal -->
+<div id="movieInfoModal" class="w3-modal" style="z-index: 1000;">
+    <div class="w3-modal-content w3-animate-zoom movie-modal">
+        <div class="modal-header-dark" style="border-bottom:none; padding-bottom:0;">
+            <span onclick="document.getElementById('movieInfoModal').style.display='none'" style="cursor:pointer;font-size:22px;color:#a1a1aa;float:right;">&times;</span>
+        </div>
+        <div class="modal-body-dark" style="display:flex; gap:20px; padding-top:0;">
+            <div style="flex-shrink:0; width: 150px;">
+                <img id="mModalPoster" src="" class="modal-poster">
+                <div id="mModalActions" style="display:flex; flex-direction:column; gap:8px; margin-top:15px;">
+                    <!-- Buttons go here -->
+                </div>
+            </div>
+            <div>
+                <h2 id="mModalTitle" style="font-family:'Playfair Display', serif; color:#facc15; margin:0 0 5px 0; font-size: 22px;"></h2>
+                <div id="mModalYear" style="color:#a1a1aa; font-size:14px; margin-bottom:15px;"></div>
+                <div id="mModalRating" style="margin-bottom:10px;"></div>
+                <div id="mModalOverview" style="font-size:13px; line-height:1.6; color:#e4e4e7; margin-bottom: 15px;"></div>
+                <div id="mModalReview" style="font-size: 13px; font-style: italic; color: #a1a1aa; border-left: 2px solid #facc15; padding-left: 10px; display: none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentPage = 1;
+    let isLoading = false;
+    let movieDetails = {};
+
+    function showSkeletons() { document.getElementById('loadingSkeletons').style.display = 'flex'; }
+    function hideSkeletons() { document.getElementById('loadingSkeletons').style.display = 'none'; }
+
+    function openModal(dbId) {
+        const m = movieDetails[dbId];
+        if(!m) return;
+        document.getElementById('mModalTitle').innerText = m.title;
+        document.getElementById('mModalYear').innerText = m.release_year;
+        document.getElementById('mModalPoster').src = "https://image.tmdb.org/t/p/w300" + m.poster_path;
+        document.getElementById('mModalOverview').innerText = m.overview;
+        
+        let stars = '';
+        if (m.user_rating) {
+            for (let i = 0; i < m.user_rating; i++) stars += '<i class="fa-solid fa-star" style="color:#facc15;"></i>';
+            for (let i = m.user_rating; i < 5; i++) stars += '<i class="fa-regular fa-star" style="color:#facc15;"></i>';
+        }
+        document.getElementById('mModalRating').innerHTML = stars ? `Your Rating: ${stars}` : '';
+        
+        if (m.user_review) {
+            document.getElementById('mModalReview').innerText = `"${m.user_review}"`;
+            document.getElementById('mModalReview').style.display = 'block';
+        } else {
+            document.getElementById('mModalReview').style.display = 'none';
+        }
+        
+        let actionsHtml = `<button class="poster-btn danger" onclick="removeMovie(${m.db_id})"><i class="fa-solid fa-trash"></i> Remove</button>`;
+        document.getElementById('mModalActions').innerHTML = actionsHtml;
+        document.getElementById('movieInfoModal').style.display = 'block';
+    }
+
+    function loadMovies(page, append) {
+        isLoading = true;
+        showSkeletons();
+        fetch(`/api/watched/items?page=${page}&per_page=20`).then(r => r.json()).then(data => {
+            hideSkeletons();
+            const container = document.getElementById('movieList');
+            if (!append) container.innerHTML = '';
+
+            if (data.movies.length === 0 && page === 1) {
+                container.innerHTML = '<div style="text-align:center;padding:50px;background:#1a1a1e;border-radius:12px;border:1px dashed #333;width:100%;"><i class="fa-solid fa-eye" style="font-size:32px;color:#333;margin-bottom:12px;"></i><p class="text-muted" style="font-size:14px;">No watched movies yet.</p></div>';
+                document.getElementById('loadMoreBtn').style.display = 'none';
+            } else {
+                data.movies.forEach(m => {
+                    movieDetails[m.db_id] = m;
+                    const poster = m.poster_path && m.poster_path !== 'None'
+                        ? `<img src="https://image.tmdb.org/t/p/w200${m.poster_path}">`
+                        : '<div style="background:#333;width:100%;height:100%;aspect-ratio:2/3;border-radius:8px;"></div>';
+                    
+                    let stars = '';
+                    if (m.user_rating) {
+                        for (let i = 0; i < m.user_rating; i++) stars += '<i class="fa-solid fa-star"></i>';
+                        for (let i = m.user_rating; i < 5; i++) stars += '<i class="fa-regular fa-star"></i>';
+                    }
+
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="poster-container" id="movie-${m.db_id}">
+                            <div onclick="openModal(${m.db_id})">${poster}</div>
+                            ${stars ? `<div class="rating">${stars}</div>` : '<div class="rating"></div>'}
+                            <button class="poster-btn danger" onclick="removeMovie(${m.db_id})"><i class="fa-solid fa-trash"></i> Remove</button>
+                        </div>`);
+                });
+                document.getElementById('loadMoreBtn').style.display = data.has_more ? 'block' : 'none';
+            }
+            isLoading = false;
+        });
+    }
+
+    function loadMore() { if (isLoading) return; currentPage++; loadMovies(currentPage, true); }
+
+    function removeMovie(dbId) {
+        fetch('{{ url_for("watchlist_remove") }}', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({db_id: dbId})
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                const el = document.getElementById('movie-' + dbId);
+                el.style.opacity = '0'; el.style.transform = 'translateX(-20px)';
+                setTimeout(() => el.remove(), 300);
+                showToast('Movie removed', 'success');
+            }
+        });
+    }
+
+    loadMovies(1, false);
+</script>
+{% endblock %}

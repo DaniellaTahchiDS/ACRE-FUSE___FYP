@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACRE - FUSE - Blind User Study</title>
+    <!-- W3.CSS Framework -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Chatbot CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding-bottom: 60px;
+        }
+
+        .nav-bar {
+            background-color: #1a1a1a !important;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: white !important;
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+
+        .text-accent {
+            color: #facc15 !important;
+        }
+
+        .text-muted {
+            color: #a1a1aa !important;
+        }
+
+        .header-section {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .eval-title {
+            font-weight: 700;
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .eval-subtitle {
+            color: #a1a1aa;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .choices-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .choices-label {
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: #a1a1aa;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 10px;
+        }
+
+        .choice-pill {
+            background-color: #27272a;
+            color: #facc15;
+            border: 1px solid #3f3f46;
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .sets-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .set-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .set-title {
+            font-family: 'Playfair Display', serif;
+            color: #facc15;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .set-count {
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #a1a1aa;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .movie-row {
+            display: flex;
+            background-color: #1a1a1e;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            min-height: 140px;
+            height: auto;
+            border: 1px solid #2a2a2e;
+            transition: transform 0.2s;
+        }
+
+        .movie-row:hover {
+            transform: translateX(5px);
+            border-color: #facc15;
+        }
+
+        .movie-poster {
+            width: 95px;
+            height: 100%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .movie-details {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .m-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .m-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .m-year {
+            color: #a1a1aa;
+            font-size: 13px;
+        }
+
+        .genres {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: auto;
+            margin-top: 5px;
+        }
+
+        .genre-badge {
+            background-color: #27272a;
+            color: #e4e4e7;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .rating {
+            color: #facc15;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap; /* Allow wrapping for the info text */
+        }
+
+        .rating-num {
+            color: #a1a1aa;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+
+        .preference-btn {
+            width: 100%;
+            padding: 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            background-color: #facc15;
+            color: #121212;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            opacity: 0.7;
+        }
+
+        .preference-btn:hover {
+            opacity: 0.9;
+        }
+
+        .preference-btn.selected {
+            opacity: 1;
+            outline: 3px solid white;
+            box-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .feedback-section {
+            margin-top: 80px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 40px 20px;
+            border-top: 1px solid #333;
+        }
+
+        .feedback-title {
+            text-align: center;
+            color: #facc15;
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .feedback-subtitle {
+            text-align: center;
+            color: #a1a1aa;
+            font-size: 15px;
+            margin-bottom: 40px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: #a1a1aa;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Slider styling */
+        .slider-wrapper {
+            margin-bottom: 40px;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #71717a;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #3f3f46;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #facc15;
+            cursor: pointer;
+            border: 2px solid #121212;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #facc15;
+            cursor: pointer;
+            border: 2px solid #121212;
+        }
+
+        .slider.untouched {
+            opacity: 0.4;
+        }
+
+        .slider.untouched::-webkit-slider-thumb {
+            background: #52525b;
+        }
+
+        .slider.untouched::-moz-range-thumb {
+            background: #52525b;
+        }
+
+        textarea {
+            width: 100%;
+            background-color: #1a1a1e;
+            border: 1px solid #2a2a2e;
+            border-radius: 8px;
+            color: white;
+            padding: 15px;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #facc15;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            background-color: #6a5e11;
+            color: #121212;
+            border: none;
+            cursor: not-allowed;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .submit-btn.active {
+            background-color: #8f7f18;
+            cursor: pointer;
+            color: white;
+        }
+
+        .submit-btn.active:hover {
+            background-color: #a18e17;
+        }
+
+        .show-more-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            background-color: transparent;
+            color: #facc15;
+            border: 1px dashed #facc15;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        .show-more-btn:hover {
+            background-color: rgba(250, 204, 21, 0.1);
+            border-style: solid;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #71717a;
+            font-size: 11px;
+            margin-top: 50px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Watchlist Folder Modal Styles */
+        .folder-list {
+            margin-top: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .folder-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .folder-item:hover {
+            border-color: #facc15;
+            background: #3f3f46;
+        }
+
+        .folder-item i {
+            margin-right: 12px;
+            color: #facc15;
+        }
+
+        .create-folder-input {
+            width: 100%;
+            background: #121212;
+            border: 1px solid #3f3f46;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .create-folder-input:focus {
+            border-color: #facc15;
+            outline: none;
+        }
+
+        .btn-create-folder {
+            width: 100%;
+            background: #facc15;
+            color: #121212;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-create-folder:hover {
+            background: #eab308;
+        }
+
+        .modal-dark {
+            background-color: #1a1a1e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            max-width: 400px;
+            overflow: hidden;
+        }
+
+        .modal-header-dark {
+            padding: 20px 25px;
+            border-bottom: 1px solid #2a2a2e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body-dark {
+            padding: 25px;
+        }
+
+        /* Improved Modal Centering */
+        .w3-modal {
+            padding-top: 50px;
+            padding-bottom: 50px;
+            display: none;
+            /* Controlled by JS */
+        }
+
+        .w3-modal.w3-show {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .w3-modal-content {
+            margin: 0 !important;
+            /* Reset W3.CSS default margin */
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="nav-bar">
+        <a href="{{ url_for('home') }}" class="logo">
+            <i class="fa-solid fa-star text-accent"></i> ACRE - FUSE
+        </a>
+        <div style="font-size: 13px; color: #a1a1aa;">Evaluation Phase: <strong style="color: white;">Blind User
+                Study</strong></div>
+    </div>
+
+    <div class="header-section">
+        <h1 class="eval-title">ACRE vs FUSE Recommendations</h1>
+        <p class="eval-subtitle">Compare the results from our two specialized engines. ACRE explores neighboring taste
+            clusters, while FUSE synthesizes semantic features from your favorites. Select the strategy that resonates
+            most with you.</p>
+
+        <div class="choices-section">
+            <span class="choices-label">YOUR CHOICES:</span>
+            {% for choice in user_choices %}
+            <span class="choice-pill">{{ choice.title }} ({{ choice.release_year }})</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <form id="evaluationForm" action="{{ url_for('submit_feedback') }}" method="POST">
+        <input type="hidden" name="preferred_set" id="preferredSetInput" value="">
+        <input type="hidden" name="set_a_alg" value="{{ set_type_a }}">
+        <input type="hidden" name="set_b_alg" value="{{ set_type_b }}">
+        {% if metrics_data %}
+        {% for key, val in metrics_data.items() %}
+        <input type="hidden" name="{{ key }}" value="{{ val|e }}">
+        {% endfor %}
+        {% endif %}
+        <input type="hidden" name="viewed_movie_ids" id="viewedMovieIdsInput" value="[]">
+
+        <div class="w3-row-padding sets-container">
+            <!-- SET A -->
+            <div class="w3-col l6 w3-margin-bottom">
+                <div class="set-header">
+                    <h2 class="set-title">ACRE ENGINE</h2>
+                    <span class="set-count" id="setACount">SHOWING 5 OF {{ set_a|length }} TITLES</span>
+                </div>
+
+                {% for movie in set_a %}
+                <div class="movie-row" style="cursor: pointer;{% if loop.index > 5 %} display:none;{% endif %}"
+                    data-set="A" data-index="{{ loop.index }}" onclick="openModal(this)" data-id="{{ movie.id }}"
+                    data-set-type="{{ set_type_a }}" data-title="{{ movie.title|e }}"
+                    data-year="{{ movie.release_year|e }}" data-poster="{{ movie.poster_path|e }}"
+                    data-genres="{{ movie.genres|e }}" data-runtime="{{ movie.runtime|e }}"
+                    data-tagline="{{ movie.tagline|e }}" data-overview="{{ movie.overview|e }}"
+                    data-explanation="{{ movie.explanation|e }}" data-vote="{{ movie.vote_average|e }}"
+                    data-language="{{ movie.original_language|upper|e }}"
+                    data-companies="{{ movie.production_companies|e }}"
+                    data-countries="{{ movie.production_countries|e }}">
+                    {% if movie.poster_path %}
+                    <img src="https://image.tmdb.org/t/p/w200{{ movie.poster_path }}" alt="Poster" class="movie-poster">
+                    {% else %}
+                    <div class="movie-poster" style="background:#333;"></div>
+                    {% endif %}
+                    <div class="movie-details">
+                        <div class="m-top">
+                            <span class="m-title">{{ movie.title }}</span>
+                            <span class="m-year">{{ movie.release_year }}</span>
+                        </div>
+                        <div class="genres">
+                            {% for genre in movie.genres.split(',')[:2] %}
+                            {% if genre.strip() %}
+                            <span class="genre-badge">{{ genre.strip() }}</span>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="rating">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                class="fa-regular fa-star"></i>
+                            <span class="rating-num">{{ movie.vote_average }}/10</span>
+                            <div style="margin-left: auto; font-size: 10px; color: #a1a1aa; opacity: 0.9; display: flex; align-items: center; gap: 5px; font-weight: 500;">
+                                <i class="fa-solid fa-circle-info" style="color: #facc15;"></i>
+                                <span>Click card for details & reasoning</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <button type="button" class="choice-pill" style="padding: 4px 10px; font-size: 10px;"
+                                onclick="event.stopPropagation(); addToWatchlist({{ movie.id }}, '{{ set_type_a }}', this)">
+                                <i class="fa-solid fa-plus"></i> WATCHLIST
+                            </button>
+                            <button type="button" class="choice-pill"
+                                style="padding: 4px 10px; font-size: 10px; border-color: #facc15; color: #facc15;"
+                                onclick="event.stopPropagation(); askAboutMovie('{{ movie.title|e }}')">
+                                <i class="fa-solid fa-comment-dots"></i> ASK EXPERT
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if set_a|length > 5 %}
+                <button type="button" class="show-more-btn" id="showMoreA" onclick="showMore('A')">
+                    <i class="fa-solid fa-chevron-down" style="margin-right:8px;"></i>SHOW 5 MORE
+                </button>
+                {% endif %}
+
+                <button type="button" class="preference-btn" id="btnSetA" onclick="selectSet('A')">
+                    <i class="fa-solid fa-thumbs-up" style="margin-right:8px;"></i> I PREFER ACRE
+                </button>
+            </div>
+
+            <!-- SET B -->
+            <div class="w3-col l6 w3-margin-bottom">
+                <div class="set-header">
+                    <h2 class="set-title">FUSE ENGINE</h2>
+                    <span class="set-count" id="setBCount">SHOWING 5 OF {{ set_b|length }} TITLES</span>
+                </div>
+
+                {% for movie in set_b %}
+                <div class="movie-row" style="cursor: pointer;{% if loop.index > 5 %} display:none;{% endif %}"
+                    data-set="B" data-index="{{ loop.index }}" onclick="openModal(this)" data-id="{{ movie.id }}"
+                    data-set-type="{{ set_type_b }}" data-title="{{ movie.title|e }}"
+                    data-year="{{ movie.release_year|e }}" data-poster="{{ movie.poster_path|e }}"
+                    data-genres="{{ movie.genres|e }}" data-runtime="{{ movie.runtime|e }}"
+                    data-tagline="{{ movie.tagline|e }}" data-overview="{{ movie.overview|e }}"
+                    data-explanation="{{ movie.explanation|e }}" data-vote="{{ movie.vote_average|e }}"
+                    data-language="{{ movie.original_language|upper|e }}"
+                    data-companies="{{ movie.production_companies|e }}"
+                    data-countries="{{ movie.production_countries|e }}">
+                    {% if movie.poster_path %}
+                    <img src="https://image.tmdb.org/t/p/w200{{ movie.poster_path }}" alt="Poster" class="movie-poster">
+                    {% else %}
+                    <div class="movie-poster" style="background:#333;"></div>
+                    {% endif %}
+                    <div class="movie-details">
+                        <div class="m-top">
+                            <span class="m-title">{{ movie.title }}</span>
+                            <span class="m-year">{{ movie.release_year }}</span>
+                        </div>
+                        <div class="genres">
+                            {% for genre in movie.genres.split(',')[:2] %}
+                            {% if genre.strip() %}
+                            <span class="genre-badge">{{ genre.strip() }}</span>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="rating">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                class="fa-regular fa-star"></i>
+                            <span class="rating-num">{{ movie.vote_average }}/10</span>
+                            <div style="margin-left: auto; font-size: 10px; color: #a1a1aa; opacity: 0.9; display: flex; align-items: center; gap: 5px; font-weight: 500;">
+                                <i class="fa-solid fa-circle-info" style="color: #facc15;"></i>
+                                <span>Click card for details & reasoning</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <button type="button" class="choice-pill" style="padding: 4px 10px; font-size: 10px;"
+                                onclick="event.stopPropagation(); addToWatchlist({{ movie.id }}, '{{ set_type_b }}', this)">
+                                <i class="fa-solid fa-plus"></i> WATCHLIST
+                            </button>
+                            <button type="button" class="choice-pill"
+                                style="padding: 4px 10px; font-size: 10px; border-color: #facc15; color: #facc15;"
+                                onclick="event.stopPropagation(); askAboutMovie('{{ movie.title|e }}')">
+                                <i class="fa-solid fa-comment-dots"></i> ASK EXPERT
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if set_b|length > 5 %}
+                <button type="button" class="show-more-btn" id="showMoreB" onclick="showMore('B')">
+                    <i class="fa-solid fa-chevron-down" style="margin-right:8px;"></i>SHOW 5 MORE
+                </button>
+                {% endif %}
+
+                <button type="button" class="preference-btn" id="btnSetB" onclick="selectSet('B')">
+                    <i class="fa-solid fa-thumbs-up" style="margin-right:8px;"></i> I PREFER FUSE
+                </button>
+            </div>
+        </div>
+
+        <div class="feedback-section">
+            <h2 class="feedback-title">REFINE YOUR FEEDBACK</h2>
+            <p class="feedback-subtitle">Your insights help us calibrate the recommendation engine for better precision.
+            </p>
+
+            <div class="w3-row-padding" style="margin: 0 -16px;">
+                <div class="w3-col m6 slider-wrapper">
+                    <span class="form-label">How unexpected were these recommendations?</span>
+                    <div class="slider-labels">
+                        <span>Familiar</span>
+                        <span>Serendipitous</span>
+                    </div>
+                    <input type="range" name="familiarity" min="1" max="5" value="3" class="slider untouched"
+                        oninput="markTouched(this)">
+                    <div style="display:flex; justify-content:space-between; color:#a1a1aa; font-size:10px;">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                            class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                            class="fa-solid fa-star"></i>
+                    </div>
+                </div>
+                <div class="w3-col m6 slider-wrapper">
+                    <span class="form-label">How well do these match your overall taste?</span>
+                    <div class="slider-labels">
+                        <span>Poorly</span>
+                        <span>Perfectly</span>
+                    </div>
+                    <input type="range" name="match_score" min="1" max="5" value="3" class="slider untouched"
+                        oninput="markTouched(this)">
+                    <div style="display:flex; justify-content:space-between; color:#a1a1aa; font-size:10px;">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                            class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                            class="fa-solid fa-star"></i>
+                    </div>
+                </div>
+            </div>
+
+            <span class="form-label" style="margin-top: 20px;">TELL US WHY <span
+                    style="opacity: 0.6; font-size: 0.9em;">(OPTIONAL)</span></span>
+            <textarea name="comments"
+                placeholder="What specific aspects influenced your decision? (e.g., mood, variety, specific actors...)"></textarea>
+
+            <button type="button" id="submitBtn" class="submit-btn" onclick="submitForm()">
+                SUBMIT EVALUATION <i class="fa-solid fa-paper-plane" style="margin-left: 8px;"></i>
+            </button>
+        </div>
+    </form>
+
+    <div class="footer-note">
+        Adaptive Cross-Cluster Recommendation & Feature Unification for Semantic Exploration Engine (ACRE - FUSE) •
+        Interactive Evaluation Phase<br>
+        <span style="font-size:8px; opacity:0.5; margin-top:5px; display:block;">TRANSPARENT ALGORITHM EVALUATION FOR
+            ENHANCED USER TRUST</span>
+    </div>
+
+    <!-- Movie Details Modal -->
+    <div id="movieModal" class="w3-modal" style="z-index: 1000;">
+        <div class="w3-modal-content w3-animate-zoom w3-card-4"
+            style="background-color: #1a1a1e; color: white; border-radius: 8px; max-width: 650px; overflow: hidden; border: 1px solid #333;">
+            <header class="w3-container"
+                style="border-bottom: 1px solid #2a2a2e; padding: 20px 25px; position: relative;">
+                <span onclick="closeModal()"
+                    class="w3-button w3-display-topright text-accent w3-hover-text-white w3-hover-none"
+                    style="font-size: 24px; padding: 10px 20px;">&times;</span>
+                <h2 id="modalTitle"
+                    style="font-family: 'Playfair Display', serif; color: #facc15; margin:0; font-size: 28px; padding-right: 40px;">
+                    Movie Title</h2>
+                <div style="display: flex; gap: 15px; margin-top: 8px; font-size: 14px; align-items: center;">
+                    <span id="modalYear" style="color: #e4e4e7; font-weight: 600;"></span>
+                    <span id="modalRuntime" style="color: #a1a1aa;"><i class="fa-regular fa-clock"></i> </span>
+                    <span id="modalLanguage"
+                        style="background-color: #27272a; border: 1px solid #3f3f46; border-radius: 4px; padding: 2px 6px; font-size: 11px; font-weight: bold; color: #facc15;"></span>
+                </div>
+            </header>
+            <div class="w3-container" style="padding: 25px;">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex-shrink: 0;">
+                        <img id="modalPoster" src=""
+                            style="width: 160px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                        <div class="rating" style="margin-top: 15px; justify-content: center; font-size: 16px;">
+                            <i class="fa-solid fa-star"></i> <span id="modalRating" class="rating-num"
+                                style="margin-left: 5px; color: white; font-weight: bold; font-size: 16px;"></span>
+                        </div>
+                    </div>
+                    <div style="flex-grow: 1; max-width: 400px;">
+                        <div style="margin-bottom: 15px;" id="modalGenres">
+                            <!-- Genres inserted here -->
+                        </div>
+                        <p id="modalTagline"
+                            style="font-style: italic; color: #facc15; font-size: 15px; margin-top: 0; margin-bottom: 15px;">
+                        </p>
+                        <p id="modalOverview"
+                            style="font-size: 14px; line-height: 1.6; color: #d4d4d8; margin-bottom: 20px;"></p>
+
+                        <div style="border-top: 1px solid #2a2a2e; padding-top: 15px;">
+                            <div style="margin-bottom: 8px; font-size: 13px;">
+                                <span
+                                    style="color: #a1a1aa; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 1px;">Countries:</span>
+                                <span id="modalCountries" style="color: #e4e4e7; margin-left: 5px;"></span>
+                            </div>
+                            <div style="font-size: 13px;">
+                                <span
+                                    style="color: #a1a1aa; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 1px;">Studios:</span>
+                                <span id="modalCompanies" style="color: #e4e4e7; margin-left: 5px;"></span>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid #2a2a2e; padding-top: 15px; margin-top: 15px;">
+                            <span
+                                style="color: #facc15; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; display: block; margin-bottom: 5px;">Why
+                                was this recommended?</span>
+                            <p id="modalExplanation"
+                                style="font-size: 13px; color: #a1a1aa; line-height: 1.5; margin: 0; font-style: italic;">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="w3-container"
+                style="background-color: #121212; padding: 15px 25px; text-align: right; border-top: 1px solid #2a2a2e;">
+                <button type="button" class="choice-pill" style="cursor: pointer;" onclick="closeModal()">Close
+                    Window</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast-notification">
+        <div class="toast-content">
+            <i id="toast-icon" class="fa-solid fa-check-circle toast-icon"></i>
+            <span id="toast-message"></span>
+        </div>
+        <a id="toast-action" class="toast-action" style="display:none;" href="#">View</a>
+    </div>
+
+    <!-- Watchlist Folder Modal -->
+    <div id="watchlistFolderModal" class="w3-modal" style="z-index: 1001;">
+        <div class="w3-modal-content w3-animate-zoom modal-dark" style="color: white;">
+            <div class="modal-header-dark">
+                <h3 style="font-family: 'Playfair Display', serif; color: #facc15; margin: 0; font-size: 20px;">Add to
+                    List</h3>
+                <span onclick="closeWatchlistFolderModal()"
+                    style="cursor: pointer; font-size: 22px; color: #a1a1aa;">&times;</span>
+            </div>
+            <div class="modal-body-dark">
+                <div id="existingFoldersTitle"
+                    style="font-size: 11px; color: #71717a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
+                    Your Lists</div>
+                <div id="folderList" class="folder-list">
+                    <!-- Folders will be loaded here -->
+                    <div class="folder-item" onclick="confirmAddToFolder(null)">
+                        <i class="fa-solid fa-bookmark"></i>
+                        <span>Default Watchlist</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; border-top: 1px solid #2a2a2e; padding-top: 20px;">
+                    <div
+                        style="font-size: 11px; color: #71717a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
+                        Create New List</div>
+                    <input type="text" id="newFolderName" class="create-folder-input" placeholder="List name...">
+                    <button class="btn-create-folder" onclick="createNewFolderAndAdd()">Create & Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        function showToast(message, type, duration) {
+            type = type || 'success';
+            duration = duration || 3000;
+            var toast = document.getElementById("toast");
+            var msgEl = document.getElementById("toast-message");
+            var iconEl = document.getElementById("toast-icon");
+            var actionEl = document.getElementById("toast-action");
+            msgEl.innerHTML = message;
+            actionEl.style.display = 'none';
+            if (type === 'watchlist') {
+                iconEl.className = 'fa-solid fa-bookmark toast-icon';
+                toast.className = 'toast-notification toast-watchlist toast-show';
+                actionEl.style.display = 'inline-flex';
+                actionEl.href = '{{ url_for("watchlist_page") }}';
+                actionEl.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Watchlist';
+            } else if (type === 'error') {
+                iconEl.className = 'fa-solid fa-circle-exclamation toast-icon';
+                toast.className = 'toast-notification toast-error toast-show';
+            } else {
+                iconEl.className = 'fa-solid fa-check-circle toast-icon';
+                toast.className = 'toast-notification toast-success toast-show';
+            }
+            clearTimeout(window._toastTimeout);
+            window._toastTimeout = setTimeout(function () {
+                toast.className = toast.className.replace(' toast-show', '');
+            }, duration);
+        }
+
+        let currentAddMovieId = null;
+        let currentAddRecommendedBy = null;
+        let currentAddSuccessCallback = null;
+
+        function openWatchlistFolderModal(movieId, recommendedBy, successCallback) {
+            currentAddMovieId = movieId;
+            currentAddRecommendedBy = recommendedBy;
+            currentAddSuccessCallback = successCallback;
+
+            document.getElementById('newFolderName').value = '';
+            const modal = document.getElementById('watchlistFolderModal');
+            modal.style.display = 'flex';
+            modal.classList.add('w3-show');
+
+            // Load folders
+            fetch('/api/folders')
+                .then(r => r.json())
+                .then(data => {
+                    const list = document.getElementById('folderList');
+                    list.innerHTML = `
+                        <div class="folder-item" onclick="confirmAddToFolder(null)">
+                            <i class="fa-solid fa-bookmark"></i>
+                            <span>Default Watchlist</span>
+                        </div>
+                    `;
+                    if (data.folders && data.folders.length > 0) {
+                        data.folders.forEach(f => {
+                            list.innerHTML += `
+                                <div class="folder-item" onclick="confirmAddToFolder(${f.id})">
+                                    <i class="fa-solid fa-folder"></i>
+                                    <span>${f.name}</span>
+                                </div>
+                            `;
+                        });
+                    }
+                });
+        }
+
+        function createNewFolderAndAdd() {
+            const name = document.getElementById('newFolderName').value.trim();
+            if (!name) return;
+
+            fetch('/api/folders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        showToast(data.error, 'error');
+                    } else {
+                        confirmAddToFolder(data.id);
+                    }
+                });
+        }
+
+        function confirmAddToFolder(folderId) {
+            fetch('{{ url_for("watchlist_add") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    movie_id: currentAddMovieId,
+                    recommended_by: currentAddRecommendedBy,
+                    folder_id: folderId
+                })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    closeWatchlistFolderModal();
+                    if (data.message) {
+                        showToast(data.message, data.already ? 'success' : 'watchlist');
+                        if (currentAddSuccessCallback) {
+                            currentAddSuccessCallback(data);
+                        }
+                    } else if (data.error) {
+                        showToast(data.error, 'error');
+                    }
+                });
+        }
+
+        function addToWatchlist(movieId, algorithm, btnEl) {
+
+            openWatchlistFolderModal(movieId, algorithm, function (data) {
+                if (btnEl && !data.already) {
+                    btnEl.remove();
+                }
+            });
+        }
+
+        var currentModalMovieId = null;
+        var currentModalAlgorithm = null;
+
+
+        // Track how many movies are currently visible per set
+        var visibleCount = { A: 5, B: 5 };
+
+        function showMore(setLetter) {
+            var allCards = document.querySelectorAll('.movie-row[data-set="' + setLetter + '"]');
+            var totalCards = allCards.length;
+            var newLimit = visibleCount[setLetter] + 5;
+
+            allCards.forEach(function (card) {
+                var idx = parseInt(card.getAttribute('data-index'));
+                if (idx <= newLimit) {
+                    card.style.display = '';
+                    // Slide-in animation
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                    setTimeout(function () {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 50);
+                }
+            });
+
+            visibleCount[setLetter] = newLimit;
+
+            // Update counter label
+            var showing = Math.min(newLimit, totalCards);
+            document.getElementById('set' + setLetter + 'Count').textContent =
+                'SHOWING ' + showing + ' OF ' + totalCards + ' TITLES';
+
+            // Hide the button once all movies are visible
+            if (newLimit >= totalCards) {
+                document.getElementById('showMore' + setLetter).style.display = 'none';
+            }
+        }
+
+        function markTouched(el) {
+            el.classList.remove('untouched');
+            checkSubmitRequirements();
+        }
+
+        function checkSubmitRequirements() {
+            const preferredSet = document.getElementById('preferredSetInput').value;
+            const untouchedSliders = document.querySelectorAll('.slider.untouched');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (preferredSet !== "" && untouchedSliders.length === 0) {
+                submitBtn.classList.add('active');
+            } else {
+                submitBtn.classList.remove('active');
+            }
+        }
+
+        function selectSet(setLetter) {
+            document.getElementById('preferredSetInput').value = setLetter;
+
+            document.getElementById('btnSetA').classList.remove('selected');
+            document.getElementById('btnSetB').classList.remove('selected');
+
+            document.getElementById('btnSet' + setLetter).classList.add('selected');
+
+            checkSubmitRequirements();
+        }
+
+        function submitForm() {
+            const preferredSet = document.getElementById('preferredSetInput').value;
+            const untouchedSliders = document.querySelectorAll('.slider.untouched');
+
+            if (preferredSet === "") {
+                showToast("Please select a preferred set first.", 'error');
+                return;
+            }
+
+            if (untouchedSliders.length > 0) {
+                showToast("Please provide ratings for both questions.", 'error');
+                return;
+            }
+
+            // Collect visible movie IDs from the chosen set
+            const visibleIds = [];
+            const cards = document.querySelectorAll('.movie-row[data-set="' + preferredSet + '"]');
+            cards.forEach(card => {
+                if (card.style.display !== 'none') {
+                    visibleIds.push(parseInt(card.getAttribute('data-id')));
+                }
+            });
+            document.getElementById('viewedMovieIdsInput').value = JSON.stringify(visibleIds);
+            document.getElementById('evaluationForm').submit();
+        }
+
+        function openModal(element) {
+            currentModalMovieId = element.getAttribute('data-id');
+            currentModalAlgorithm = element.getAttribute('data-set-type');
+
+
+            document.getElementById('modalTitle').innerText = element.getAttribute('data-title');
+            document.getElementById('modalYear').innerText = element.getAttribute('data-year');
+
+            const runtime = element.getAttribute('data-runtime');
+            document.getElementById('modalRuntime').innerHTML = runtime ? '<i class="fa-regular fa-clock"></i> ' + runtime + " min" : "";
+
+            const language = element.getAttribute('data-language');
+            const langEl = document.getElementById('modalLanguage');
+            if (language) {
+                langEl.innerText = language;
+                langEl.style.display = 'inline';
+            } else {
+                langEl.style.display = 'none';
+            }
+
+            const poster = element.getAttribute('data-poster');
+            const posterImg = document.getElementById('modalPoster');
+            if (poster && poster !== 'None') {
+                posterImg.src = "https://image.tmdb.org/t/p/w300" + poster;
+                posterImg.style.display = "block";
+            } else {
+                posterImg.style.display = "none";
+            }
+
+            const genres = element.getAttribute('data-genres');
+            const genresDiv = document.getElementById('modalGenres');
+            genresDiv.innerHTML = '';
+            if (genres) {
+                genres.split(',').forEach(g => {
+                    const cleanG = g.trim();
+                    if (cleanG) {
+                        genresDiv.innerHTML += '<span class="genre-badge" style="margin-right: 5px;">' + cleanG + '</span>';
+                    }
+                });
+            }
+
+            const tagline = element.getAttribute('data-tagline');
+            document.getElementById('modalTagline').innerText = tagline ? '"' + tagline + '"' : "";
+
+            document.getElementById('modalOverview').innerText = element.getAttribute('data-overview');
+            document.getElementById('modalRating').innerText = element.getAttribute('data-vote') + "/10";
+
+            document.getElementById('modalCountries').innerText = element.getAttribute('data-countries') || "N/A";
+            document.getElementById('modalCompanies').innerText = element.getAttribute('data-companies') || "N/A";
+            document.getElementById('modalExplanation').innerText = element.getAttribute('data-explanation') || "No explanation available.";
+
+            const modal = document.getElementById('movieModal');
+            modal.style.display = 'flex';
+            modal.classList.add('w3-show');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('movieModal');
+            modal.style.display = 'none';
+            modal.classList.remove('w3-show');
+        }
+
+        // Close the modal if clicked outside
+        window.onclick = function (event) {
+            var modal = document.getElementById('movieModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+        function closeWatchlistFolderModal() {
+            const modal = document.getElementById('watchlistFolderModal');
+            modal.style.display = 'none';
+            modal.classList.remove('w3-show');
+        }
+    </script>
+    </div>
+
+    <!-- Chatbot Integration -->
+    <div id="chatbot-container">
+        <div id="chatbot-window" class="w3-card-4 w3-round-large">
+            <div id="chatbot-header">
+                <span class="small-caps"><strong><i class="fa-solid fa-robot"></i> Movie Expert AI</strong></span>
+                <div class="header-actions">
+                    <button onclick="toggleFullScreen()" class="w3-button w3-hover-none w3-text-white"
+                        title="Toggle Full Screen"><i class="fa-solid fa-expand" id="expand-icon"></i></button>
+                    <button onclick="toggleChat()" class="w3-button w3-hover-none w3-text-white"
+                        style="font-size: 20px;">&times;</button>
+                </div>
+            </div>
+            <div id="chatbot-messages">
+                <div class="bot-msg-container">
+                    <div class="bot-msg">
+                        Hi! I'm your movie expert. Ask me anything about the recommendations above! 🎬
+                    </div>
+                </div>
+            </div>
+            <div id="chatbot-input-container">
+                <input type="text" id="chatbot-input" placeholder="Type a message..."
+                    onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()" id="chatbot-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <div id="chatbot-fab" class="w3-card-4 w3-circle w3-center" onclick="toggleChat()">
+            <i class="fa-solid fa-robot"></i>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+</body>
+
+</html>

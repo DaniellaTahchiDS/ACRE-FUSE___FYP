@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+{% block title %}My Watchlist - ACRE - FUSE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-container { max-width: 900px; margin: 80px auto 40px; padding: 0 20px; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 28px; color: #facc15; margin-bottom: 5px; }
+
+    .list-nav {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 10px 0;
+        margin-bottom: 25px;
+        border-bottom: 1px solid #333;
+        scrollbar-width: none;
+    }
+    .list-nav::-webkit-scrollbar { display: none; }
+    
+    .nav-tab {
+        padding: 8px 16px;
+        background: #1a1a1e;
+        border: 1px solid #333;
+        border-radius: 20px;
+        color: #a1a1aa;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .nav-tab:hover { border-color: #facc15; color: #facc15; }
+    .nav-tab.active { background: #facc15; color: #121212; border-color: #facc15; }
+    
+    .nav-tab .delete-btn { font-size: 10px; opacity: 0.5; transition: opacity 0.2s; }
+    .nav-tab .delete-btn:hover { opacity: 1; color: #ef4444; }
+
+    .add-list-tab { border-style: dashed; border-color: #3f3f46; color: #71717a; }
+    .add-list-tab:hover { border-style: solid; border-color: #facc15; color: #facc15; }
+
+    .poster-container {
+        display: inline-flex;
+        flex-direction: column;
+        width: 140px;
+        flex-shrink: 0;
+        gap: 8px;
+    }
+
+    .poster-container img {
+        width: 100%;
+        aspect-ratio: 2/3;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid #2a2a2e;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .poster-container img:hover {
+        border-color: #facc15;
+        transform: scale(1.05);
+    }
+
+    .poster-btn {
+        background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; border-radius: 6px;
+        padding: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        text-align: center; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .poster-btn:hover { background: #3f3f46; border-color: #facc15; color: #facc15; }
+    .poster-btn.danger { color: #ef4444; border-color: #7f1d1d; }
+    .poster-btn.danger:hover { background: #7f1d1d; color: white; border-color: #ef4444; }
+    .poster-btn.success { color: #4ade80; border-color: #14532d; }
+    .poster-btn.success:hover { background: #14532d; color: white; border-color: #4ade80; }
+
+    .skeleton-container {
+        display: inline-flex;
+        flex-direction: column;
+        width: 140px;
+        gap: 8px;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .skeleton-poster { width: 100%; aspect-ratio: 2/3; background: #27272a; border-radius: 8px; }
+    .skeleton-btn { height: 28px; background: #27272a; border-radius: 6px; }
+
+    .movie-modal { background-color: #1a1a1e; border: 1px solid #333; border-radius: 12px; max-width: 600px; overflow: hidden; color: white; }
+    .modal-poster { width: 150px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+
+    /* Review & Move Modal */
+    .modal-dark { background: #1a1a1e; border: 1px solid #333; border-radius: 12px; max-width: 500px; overflow: hidden; }
+    .modal-header-dark { padding: 20px 25px; border-bottom: 1px solid #2a2a2e; display: flex; justify-content: space-between; align-items: center; }
+    .modal-body-dark { padding: 25px; }
+    .modal-footer-dark { padding: 15px 25px; border-top: 1px solid #2a2a2e; text-align: right; background: #121212; }
+
+    select.form-input-dark { cursor: pointer; }
+    textarea.form-input-dark { resize: vertical; min-height: 80px; }
+
+    .load-more-btn {
+        width: 100%;
+        padding: 16px;
+        margin-top: 30px;
+        background: rgba(26, 26, 30, 0.6);
+        border: 1px solid rgba(250, 204, 21, 0.3);
+        border-radius: 12px;
+        color: #facc15;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        backdrop-filter: blur(10px);
+    }
+
+    .load-more-btn:hover {
+        background: rgba(250, 204, 21, 0.1);
+        border-color: #facc15;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(250, 204, 21, 0.15);
+    }
+
+    .load-more-btn:active {
+        transform: translateY(0);
+    }
+
+    .load-more-btn i {
+        font-size: 12px;
+        transition: transform 0.3s ease;
+    }
+
+    .load-more-btn:hover i {
+        transform: translateY(3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-bookmark" style="margin-right: 8px;"></i>My Watchlist</h1>
+            <p class="text-muted" style="font-size: 13px; margin: 0;">Plan your future movie sessions</p>
+        </div>
+        <a href="{{ url_for('account') }}" class="pill-btn" style="text-decoration: none;">
+            <i class="fa-solid fa-arrow-left"></i> Account
+        </a>
+    </div>
+
+    <!-- List Navigation Bar -->
+    <div id="listNav" class="list-nav">
+        <div class="nav-tab active" onclick="switchTab('all', this)">All Movies</div>
+        <!-- Folder tabs will be loaded here -->
+        <div class="nav-tab add-list-tab" onclick="createFolderPrompt()">
+            <i class="fa-solid fa-plus"></i> New List
+        </div>
+    </div>
+
+    <div id="movieContainer">
+        <div id="movieList" style="display: flex; flex-wrap: wrap; gap: 16px;"></div>
+        <div id="loadingSkeletons" style="display: none; display: flex; flex-wrap: wrap; gap: 16px;">
+            <div class="skeleton-container"><div class="skeleton-poster"></div><div class="skeleton-btn"></div></div>
+            <div class="skeleton-container"><div class="skeleton-poster"></div><div class="skeleton-btn"></div></div>
+            <div class="skeleton-container"><div class="skeleton-poster"></div><div class="skeleton-btn"></div></div>
+        </div>
+        <button id="loadMoreBtn" class="load-more-btn" style="display: none;" onclick="loadMore()">
+            <i class="fa-solid fa-chevron-down" style="margin-right: 8px;"></i>Load More
+        </button>
+    </div>
+</div>
+
+<!-- Move to Folder Modal -->
+<div id="moveModal" class="w3-modal" style="z-index: 1000;">
+    <div class="w3-modal-content w3-animate-zoom modal-dark" style="color: white; max-width: 400px;">
+        <div class="modal-header-dark">
+            <h3 style="font-family: 'Playfair Display', serif; color: #facc15; margin: 0;">Move to List</h3>
+            <span onclick="document.getElementById('moveModal').style.display='none'" style="cursor:pointer;font-size:22px;color:#a1a1aa;">&times;</span>
+        </div>
+        <div class="modal-body-dark" id="moveFolderList"></div>
+    </div>
+</div>
+
+<!-- Movie Info Modal -->
+<div id="movieInfoModal" class="w3-modal" style="z-index: 1000;">
+    <div class="w3-modal-content w3-animate-zoom movie-modal">
+        <div class="modal-header-dark" style="border-bottom:none; padding-bottom:0;">
+            <span onclick="document.getElementById('movieInfoModal').style.display='none'" style="cursor:pointer;font-size:22px;color:#a1a1aa;float:right;">&times;</span>
+        </div>
+        <div class="modal-body-dark" style="display:flex; gap:20px; padding-top:0;">
+            <div style="flex-shrink:0; width: 150px;">
+                <img id="mModalPoster" src="" class="modal-poster">
+                <div id="mModalActions" style="display:flex; flex-direction:column; gap:8px; margin-top:15px;">
+                    <!-- Buttons go here -->
+                </div>
+            </div>
+            <div>
+                <h2 id="mModalTitle" style="font-family:'Playfair Display', serif; color:#facc15; margin:0 0 5px 0; font-size: 22px;"></h2>
+                <div id="mModalYear" style="color:#a1a1aa; font-size:14px; margin-bottom:15px;"></div>
+                <div id="mModalOverview" style="font-size:13px; line-height:1.6; color:#e4e4e7;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentTab = 'all';
+    let currentPage = 1;
+    let isLoading = false;
+    let movieDetails = {};
+    let folderData = {};
+
+    function showSkeletons() { document.getElementById('loadingSkeletons').style.display = 'flex'; }
+    function hideSkeletons() { document.getElementById('loadingSkeletons').style.display = 'none'; }
+
+    function switchTab(tabId, el) {
+        currentTab = tabId;
+        currentPage = 1;
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        
+        loadWatchlist(1, false);
+    }
+
+    async function loadWatchlist(page, append) {
+        if (isLoading) return;
+        isLoading = true;
+        showSkeletons();
+        
+        const folderId = currentTab === 'all' ? '' : currentTab;
+        const url = `/api/watchlist/items?page=${page}&per_page=20&folder_id=${folderId}`;
+        
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            
+            const container = document.getElementById('movieList');
+            if (!append) {
+                container.innerHTML = '';
+                movieDetails = {};
+            }
+            
+            if (data.movies.length === 0 && page === 1) {
+                container.innerHTML = '<div style="text-align:center;padding:50px;width:100%;"><p class="text-muted">No movies in this list yet.</p></div>';
+                document.getElementById('loadMoreBtn').style.display = 'none';
+            } else {
+                data.movies.forEach(m => {
+                    renderMovieCard(m, container, 'list-' + currentTab);
+                });
+                document.getElementById('loadMoreBtn').style.display = data.has_more ? 'block' : 'none';
+            }
+        } catch (e) { 
+            console.error(e); 
+            showToast('Error loading watchlist', 'error');
+        }
+        
+        hideSkeletons();
+        isLoading = false;
+    }
+
+    function loadMore() {
+        currentPage++;
+        loadWatchlist(currentPage, true);
+    }
+
+    function loadFolders() {
+        fetch('/api/folders/full').then(r => r.json()).then(data => {
+            const nav = document.getElementById('listNav');
+            const allTab = nav.children[0];
+            const addTab = nav.children[nav.children.length-1];
+            nav.innerHTML = '';
+            nav.appendChild(allTab);
+            
+            data.folders.forEach(f => {
+                folderData[f.id] = f;
+                const tab = document.createElement('div');
+                tab.className = 'nav-tab' + (currentTab == f.id ? ' active' : '');
+                tab.innerHTML = `
+                    ${f.name}
+                    <i class="fa-solid fa-times delete-btn" onclick="event.stopPropagation(); deleteFolder(${f.id})"></i>
+                `;
+                tab.onclick = (e) => switchTab(f.id, tab);
+                nav.appendChild(tab);
+            });
+            nav.appendChild(addTab);
+        });
+    }
+
+    function renderMovieCard(m, container, prefix) {
+        movieDetails[m.db_id] = m;
+        const poster = m.poster_path && m.poster_path !== 'None'
+            ? `<img src="https://image.tmdb.org/t/p/w200${m.poster_path}">`
+            : '<div style="background:#333;width:100%;height:100%;aspect-ratio:2/3;border-radius:8px;"></div>';
+        
+        const html = `
+            <div class="poster-container" id="${prefix}-${m.db_id}">
+                <div onclick="openModal(${m.db_id})">${poster}</div>
+                <button class="poster-btn success" onclick="markAsWatchedDirectly(${m.db_id})"><i class="fa-solid fa-check"></i> Watched</button>
+                <button class="poster-btn danger" onclick="removeMovie(${m.db_id})"><i class="fa-solid fa-trash"></i> Remove</button>
+            </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    function openModal(dbId) {
+        const m = movieDetails[dbId];
+        if(!m) return;
+        document.getElementById('mModalTitle').innerText = m.title;
+        document.getElementById('mModalYear').innerText = m.release_year;
+        document.getElementById('mModalPoster').src = "https://image.tmdb.org/t/p/w300" + m.poster_path;
+        document.getElementById('mModalOverview').innerText = m.overview;
+        
+        let actionsHtml = '';
+        actionsHtml += `<button class="poster-btn success" onclick="markAsWatchedDirectly(${m.db_id})"><i class="fa-solid fa-check"></i> Watched</button>`;
+        actionsHtml += `<button class="poster-btn danger" onclick="removeMovie(${m.db_id})"><i class="fa-solid fa-trash"></i> Remove</button>`;
+        actionsHtml += `<button class="poster-btn" onclick="openMoveModal(${m.db_id})" style="margin-top: 5px;"><i class="fa-solid fa-folder"></i> Move List</button>`;
+        
+        document.getElementById('mModalActions').innerHTML = actionsHtml;
+        document.getElementById('movieInfoModal').style.display = 'block';
+    }
+
+    function removeMovie(dbId) {
+        fetch('{{ url_for("watchlist_remove") }}', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({db_id: dbId})
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                document.querySelectorAll(`[id$="-${dbId}"]`).forEach(el => el.remove());
+                showToast('Movie removed', 'success');
+                document.getElementById('movieInfoModal').style.display = 'none';
+            }
+        });
+    }
+
+    function markAsWatchedDirectly(dbId) {
+        fetch('{{ url_for("watchlist_watched") }}', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({db_id: dbId})
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                showToast('Added to watched history!', 'success');
+                document.querySelectorAll(`[id$="-${dbId}"]`).forEach(el => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'scale(0.8)';
+                    setTimeout(() => el.remove(), 300);
+                });
+                document.getElementById('movieInfoModal').style.display = 'none';
+            }
+        });
+    }
+
+    function openMoveModal(dbId) {
+        const list = document.getElementById('moveFolderList');
+        list.innerHTML = '<p class="text-muted" style="font-size:13px;">Loading folders...</p>';
+        document.getElementById('moveModal').style.display = 'block';
+
+        fetch('{{ url_for("get_folders") }}').then(r => r.json()).then(data => {
+            let html = `<button class="pill-btn" style="width:100%;margin-bottom:8px;padding:10px;" onclick="moveToFolder(${dbId}, null)"><i class="fa-solid fa-inbox"></i> No List (General)</button>`;
+            data.folders.forEach(f => {
+                html += `<button class="pill-btn" style="width:100%;margin-bottom:8px;padding:10px;" onclick="moveToFolder(${dbId}, ${f.id})"><i class="fa-solid fa-folder"></i> ${f.name}</button>`;
+            });
+            list.innerHTML = html;
+        });
+    }
+
+    function moveToFolder(dbId, folderId) {
+        fetch('{{ url_for("watchlist_move_to_folder") }}', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({db_id: dbId, folder_id: folderId})
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                showToast('Movie moved!', 'success');
+                document.getElementById('moveModal').style.display = 'none';
+                location.reload();
+            }
+        });
+    }
+
+    function createFolderPrompt() {
+        const name = prompt('Enter a name for your new list:');
+        if (!name || !name.trim()) return;
+        fetch('{{ url_for("create_folder") }}', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({name: name.trim()})
+        }).then(r => r.json()).then(data => {
+            if (data.id) { 
+                showToast('List created!', 'success'); 
+                loadFolders();
+            }
+            else if (data.error) { showToast(data.error, 'error'); }
+        });
+    }
+
+    function deleteFolder(folderId) {
+        if (!confirm('Delete this list? Movies will stay in your library.')) return;
+        fetch(`/api/folders/${folderId}`, { method: 'DELETE' }).then(r => r.json()).then(data => {
+            if (data.success) { showToast('List deleted', 'success'); location.reload(); }
+        });
+    }
+
+    loadWatchlist(1, false);
+    loadFolders();
+</script>
+{% endblock %}

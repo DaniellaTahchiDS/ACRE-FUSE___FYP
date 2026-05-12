@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACRE - FUSE - Next Gen Recommendation Engine</title>
+    <!-- W3.CSS Framework -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chatbot CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+</head>
+
+<body class="theme-dark">
+
+    <!-- Navigation Bar -->
+    <div class="w3-top" style="z-index: 999;">
+        <div class="w3-bar nav-bar w3-padding">
+            <a href="#" class="w3-bar-item w3-button w3-hover-none logo">
+                <i class="fa-solid fa-star text-accent"></i> ACRE - FUSE
+            </a>
+
+            <div class="w3-right w3-hide-small nav-links">
+                <!-- Anchor links taking to respective sections -->
+                <a href="#concept"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Technology</a>
+                <a href="#process"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Research</a>
+                <a href="#contact"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Contact</a>
+                <a href="{{ url_for('account') if current_user.is_authenticated else url_for('login') }}"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition"><i
+                        class="fa-solid fa-user"></i></a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Dashboard</a>
+                {% endif %}
+                <a href="{{ url_for('recommend') }}" class="w3-bar-item w3-button btn-outline transition">Recommend</a>
+            </div>
+
+            <!-- Mobile Menu Icon -->
+            <a href="javascript:void(0)" class="w3-bar-item w3-button w3-right w3-hide-large w3-hide-medium"
+                onclick="toggleMenu()">&#9776;</a>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="w3-bar-block w3-black w3-hide w3-hide-large w3-hide-medium">
+            <a href="#concept" class="w3-bar-item w3-button" onclick="toggleMenu()">Technology</a>
+            <a href="#process" class="w3-bar-item w3-button" onclick="toggleMenu()">Research</a>
+            <a href="#contact" class="w3-bar-item w3-button" onclick="toggleMenu()">Contact</a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}" class="w3-bar-item w3-button" onclick="toggleMenu()">Logout</a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="w3-bar-item w3-button" onclick="toggleMenu()">Sign In</a>
+            {% endif %}
+            <a href="{{ url_for('recommend') }}" class="w3-bar-item w3-button" onclick="toggleMenu()">Recommend</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="w3-content w3-padding-64 hero-section" style="max-width:1200px; margin-top: 35px;">
+        <div class="w3-row-padding w3-center w3-margin-top w3-margin-bottom">
+            <div class="w3-half w3-left-align hero-text-col w3-padding-32">
+                <span class="w3-round-xxlarge tag-pill">NEXT GEN RECOMMENDATION ENGINE</span>
+                <h1 class="hero-title w3-margin-top w3-margin-bottom">Discover Movies <br><span
+                        class="text-accent">Beyond Your Bubble</span></h1>
+                <p class="hero-subtitle w3-margin-bottom">Tired of getting the same predictable recommendations?
+                    ACRE-FUSE is an intelligent movie recommendation system that challenges the echo chamber of
+                    traditional algorithms, by combining two groundbreaking strategies.</p>
+                <div class="hero-buttons w3-margin-top">
+                    <a href="{{ url_for('recommend') }}" class="w3-button btn-primary transition w3-round">Get
+                        Started</a>
+
+                </div>
+            </div>
+            <div class="w3-half hero-visual-col w3-hide-small w3-padding-32">
+                <!-- Visual Card Placeholder mimicking the design image -->
+
+                <div class="visual-card-bg">
+                    <div class="visual-card-inner">
+                        <img src="{{ url_for('static', filename='images/acrefuse.png') }}" alt="Hero Visual">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Concept Section -->
+    <section id="concept" class="w3-padding-64 bg-secondary">
+        <div class="w3-content" style="max-width:1200px;">
+            <div class="w3-center w3-margin-bottom w3-padding-32">
+                <span class="text-accent small-caps">THE CONCEPT</span>
+                <h2 class="section-title">What is ACRE - FUSE?</h2>
+            </div>
+
+            <div class="w3-row-padding w3-margin-top w3-margin-bottom">
+                <div class="w3-col l4 m6 s12 w3-margin-bottom w3-padding">
+                    <div class="info-card w3-padding-large w3-round-large transition">
+                        <i class="fa-solid fa-filter icon-large text-accent w3-margin-bottom"></i>
+                        <h3>Dual-Strategy Intelligence</h3>
+                        <p class="text-muted">The first, Adaptive Cross-Cluster Recommendation (ACRE), intelligently
+                            maps your taste profile to neighboring preference clusters. The second, Feature Unification
+                            for Semantic Exploration (FUSE), deconstructs movies into their DNA, then creatively
+                            recombines them to uncover hidden gems that match your synthesized preferences.</p>
+                    </div>
+                </div>
+
+                <div class="w3-col l4 m6 s12 w3-margin-bottom w3-padding">
+                    <div class="info-card w3-padding-large w3-round-large transition">
+                        <i class="fa-solid fa-compass icon-large text-accent w3-margin-bottom"></i>
+                        <h3>Combat Filter Bubbles</h3>
+                        <p class="text-muted">Traditional recommendation systems trap you in a cycle of similarity,
+                            showing you only what you already know you like. ACRE-FUSE is specifically designed to break
+                            this pattern by balancing personalization with intelligent exploration. Our system ensures
+                            you're constantly exposed to diverse, surprising, and serendipitous recommendations.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="w3-col l4 m6 s12 w3-margin-bottom w3-padding">
+                    <div class="info-card w3-padding-large w3-round-large transition">
+                        <i class="fa-solid fa-network-wired icon-large text-accent w3-margin-bottom"></i>
+                        <h3>Data-Driven Discovery</h3>
+                        <p class="text-muted">Powered by advanced machine learning and natural language processing,
+                            ACRE-FUSE analyzes thousands of movies across multiple dimensions. Our system learns from
+                            real user preferences through A/B testing, continuously evolving to deliver
+                            recommendations that are both unexpected and delightful without ultimately sacrificing
+                            relevance.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Process Section -->
+    <section id="process" class="w3-padding-64">
+        <div class="w3-content w3-padding-32" style="max-width:1200px;">
+            <div class="w3-row w3-margin-bottom header-row w3-padding">
+                <div class="w3-half">
+                    <span class="text-accent small-caps">THE PROCESS</span>
+                    <h2 class="section-title">How It Works</h2>
+                </div>
+                <div class="w3-half right-align-text" style="padding-top: 35px;">
+                    <p class="text-muted text-large">A sophisticated 4-step pipeline that transforms raw data into a
+                        journey of discovery.</p>
+                </div>
+            </div>
+
+            <div class="timeline-container w3-margin-top w3-padding">
+                <div class="timeline-line"></div>
+                <div class="w3-row timeline-grid">
+                    <div class="w3-col l3 m6 s12 step-item">
+                        <div class="step-number text-accent">01</div>
+                        <h4 class="step-title">Share Your Favorites</h4>
+                        <p class="text-muted text-small">Start by selecting 3-5 movies you love. This simple step
+                            creates your unique taste profile, giving both recommendation engines the foundation they
+                            need to understand your preferences. Don't overthink it—just choose films that resonate with
+                            you.</p>
+                    </div>
+                    <div class="w3-col l3 m6 s12 step-item">
+                        <div class="step-number text-accent">02</div>
+                        <h4 class="step-title"> Intelligent Analysis</h4>
+                        <p class="text-muted text-small">Behind the scenes, our dual algorithms spring into action. ACRE
+                            identifies your primary taste cluster and maps adjacent communities with relevant content.
+                            Simultaneously, FUSE extracts rich feature vectors from your selections, preparing them for
+                            creative recombination.</p>
+                    </div>
+                    <div class="w3-col l3 m6 s12 step-item">
+                        <div class="step-number text-accent">03</div>
+                        <h4 class="step-title">Dual Recommendation Generation</h4>
+                        <p class="text-muted text-small">You receive two distinct sets of personalized recommendations,
+                            displayed side-by-side. One set leverages ACRE's cross-cluster exploration. The other
+                            showcases FUSE's semantic creativity, combining elements from your favorites.</p>
+                    </div>
+                    <div class="w3-col l3 m6 s12 step-item">
+                        <div class="step-number text-accent">04</div>
+                        <h4 class="step-title">Choose & Discover</h4>
+                        <p class="text-muted text-small">Compare both recommendation sets and select the one that
+                            excites you most. Your feedback helps us understand which exploration strategy resonates
+                            with different users, continuously improving the system. Then dive in and discover your next
+                            favorite film.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="w3-padding-64">
+        <div class="w3-content w3-padding" style="max-width:1000px;">
+            <div class="cta-card w3-center w3-padding-64 w3-round-xlarge">
+                <h2 class="section-title cta-title">Ready to explore the unknown?</h2>
+                <p class="text-muted cta-subtitle">Experience ACRE - FUSE today and see how our cross-cluster engine
+                    redefines
+                    your movie night.</p>
+                <a href="{{ url_for('recommend') }}"
+                    class="w3-button btn-primary transition w3-round w3-margin-top cta-btn">Try ACRE - FUSE Now</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-secondary w3-padding-64">
+        <div class="w3-content w3-padding" style="max-width:1200px;">
+            <div class="w3-row-padding footer-top">
+                <div class="w3-col l4 m12 w3-margin-bottom">
+                    <div class="logo w3-margin-bottom text-large">
+                        <i class="fa-solid fa-star text-accent"></i> ACRE - FUSE
+                    </div>
+                    <p class="text-muted text-small pe-4">Intelligent movie recommendation system</p>
+                </div>
+                <div class="w3-col l4 m6 s12 w3-margin-bottom">
+                    <h5 class="footer-heading">CONTACT INFORMATION</h5>
+                    <ul class="w3-ul footer-links">
+                        <li class="text-muted">Proposed by: Daniella Tahchi</li>
+                        <li class="text-muted">Email: daniela.tahchi@net.usj.edu.lb</li>
+                    </ul>
+                </div>
+                <div class="w3-col l4 m6 s12 w3-margin-bottom">
+                    <h5 class="footer-heading">QUICK LINKS</h5>
+                    <ul class="w3-ul footer-links">
+                        <li><a href="#" class="text-muted transition w3-hover-text-yellow">Methodology</a></li>
+                        <li><a href="#" class="text-muted transition w3-hover-text-yellow">TMDB Dataset</a></li>
+                        <li><a href="#" class="text-muted transition w3-hover-text-yellow">User Study</a></li>
+                        <li><a href="#" class="text-muted transition w3-hover-text-yellow">API Docs</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div
+                class="w3-row footer-bottom w3-padding-top-32 w3-margin-top w3-border-top w3-border-dark-gray w3-padding">
+                <div class="w3-half text-muted text-small left-align-text-mobile">
+                    © 2026 ACRE - FUSE Project. All rights reserved.
+                </div>
+                <div
+                    class="w3-half right-align-text text-muted text-small text-spacing left-align-text-mobile mt-3-mobile">
+                    FLASK | SQLITE | PYTHON
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chatbot Integration -->
+    <div id="chatbot-container">
+        <div id="chatbot-window" class="w3-card-4 w3-round-large">
+            <div id="chatbot-header">
+                <span class="small-caps"><strong><i class="fa-solid fa-robot"></i> Movie Expert AI</strong></span>
+                <div class="header-actions">
+                    <button onclick="toggleFullScreen()" class="w3-button w3-hover-none w3-text-white"
+                        title="Toggle Full Screen"><i class="fa-solid fa-expand" id="expand-icon"></i></button>
+                    <button onclick="toggleChat()" class="w3-button w3-hover-none w3-text-white"
+                        style="font-size: 20px;">&times;</button>
+                </div>
+            </div>
+            <div id="chatbot-messages">
+                <div class="bot-msg-container">
+                    <div class="bot-msg">
+                        Hi! I'm your movie expert. Ask me anything about cinema, budgets, or what to watch next! 🎬
+                    </div>
+                </div>
+            </div>
+            <div id="chatbot-input-container">
+                <input type="text" id="chatbot-input" placeholder="Type a message..."
+                    onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()" id="chatbot-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <div id="chatbot-fab" class="w3-card-4 w3-circle w3-center" onclick="toggleChat()">
+            <i class="fa-solid fa-robot"></i>
+        </div>
+    </div>
+
+    <!-- Toast Notification System -->
+    <div id="toast" class="toast-notification">
+        <div class="toast-content">
+            <i id="toast-icon" class="fa-solid fa-check-circle toast-icon"></i>
+            <span id="toast-message"></span>
+        </div>
+        <a id="toast-action" class="toast-action" style="display:none;" href="#">View</a>
+    </div>
+
+    <!-- Welcome Notification -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            showToast("{{ message }}", '{{ category }}', 5000);
+        });
+    </script>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+    <script>
+        // Tab / menu toggle for smaller screens
+        function toggleMenu() {
+            var x = document.getElementById("mobileMenu");
+            if (x.className.indexOf("w3-show") == -1) {
+                x.className += " w3-show";
+            } else {
+                x.className = x.className.replace(" w3-show", "");
+            }
+        }
+
+        function showToast(message, type, duration) {
+            type = type || 'success';
+            duration = duration || 3000;
+            var toast = document.getElementById("toast");
+            var msgEl = document.getElementById("toast-message");
+            var iconEl = document.getElementById("toast-icon");
+            var actionEl = document.getElementById("toast-action");
+
+            msgEl.innerHTML = message;
+            actionEl.style.display = 'none';
+
+            // Set icon based on type
+            if (type === 'welcome') {
+                iconEl.className = 'fa-solid fa-hand-sparkles toast-icon';
+                toast.className = 'toast-notification toast-welcome toast-show';
+            } else if (type === 'watchlist') {
+                iconEl.className = 'fa-solid fa-bookmark toast-icon';
+                toast.className = 'toast-notification toast-watchlist toast-show';
+                actionEl.style.display = 'inline-flex';
+                actionEl.href = '{{ url_for("watchlist_page") if current_user and current_user.is_authenticated else "#" }}';
+                actionEl.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Watchlist';
+            } else if (type === 'error') {
+                iconEl.className = 'fa-solid fa-circle-exclamation toast-icon';
+                toast.className = 'toast-notification toast-error toast-show';
+            } else {
+                iconEl.className = 'fa-solid fa-check-circle toast-icon';
+                toast.className = 'toast-notification toast-success toast-show';
+            }
+
+            clearTimeout(window._toastTimeout);
+            window._toastTimeout = setTimeout(function () {
+                toast.className = toast.className.replace(' toast-show', '');
+            }, duration);
+        }
+
+        // Scroll Spy Implementation
+        document.addEventListener('DOMContentLoaded', function () {
+            const sections = document.querySelectorAll('section[id], footer[id]');
+            const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+            const mobileLinks = document.querySelectorAll('#mobileMenu a[href^="#"]');
+
+            function updateActiveLink() {
+                let current = '';
+                const scrollPos = window.scrollY + 150; // Increased offset for better detection
+
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (window.scrollY >= sectionTop - 200) { // If we've scrolled past the section start (with buffer)
+                        current = '#' + section.getAttribute('id');
+                    }
+                });
+
+                // Check if we are at the very bottom of the page
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 20) {
+                    current = '#contact';
+                }
+
+                // Apply to desktop links
+                navLinks.forEach(link => {
+                    link.classList.remove('active-nav');
+                    if (link.getAttribute('href') === current) {
+                        link.classList.add('active-nav');
+                    }
+                });
+
+                // Apply to mobile links
+                mobileLinks.forEach(link => {
+                    link.style.color = ''; // Reset
+                    link.style.fontWeight = '';
+                    link.style.fontSize = '';
+                    if (link.getAttribute('href') === current) {
+                        link.style.color = '#eab308'; // Yellow
+                        link.style.fontWeight = '600';
+                        link.style.fontSize = '1.1rem';
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', updateActiveLink);
+            updateActiveLink(); // Run on load
+        });
+    </script>
+</body>
+
+</html>

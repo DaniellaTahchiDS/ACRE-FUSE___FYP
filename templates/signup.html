@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Sign Up - ACRE - FUSE{% endblock %}
+
+{% block content %}
+<section class="w3-padding-64" style="min-height: 100vh; display: flex; align-items: center;">
+    <div class="w3-content w3-padding" style="max-width:560px; width: 100%;">
+        <div class="cta-card w3-round-xlarge w3-center" style="padding: 40px !important;">
+            <h2 class="section-title cta-title" style="font-size: 2.2rem; margin-bottom: 10px;">Create Account</h2>
+            <p class="text-muted" style="font-size: 14px; margin-bottom: 25px;">Join ACRE-FUSE and discover movies beyond your bubble</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="w3-panel w3-round {% if category == 'error' %}w3-red{% else %}w3-green{% endif %} w3-padding">
+                <p>{{ message }}</p>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('signup') }}" method="POST" class="w3-container w3-left-align" id="signupForm">
+                <!-- Step 1: Account Info -->
+                <div id="step1">
+                    <p class="text-accent" style="font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 15px;">
+                        <i class="fa-solid fa-user-plus" style="margin-right: 5px;"></i> STEP 1 — ACCOUNT INFO
+                    </p>
+
+                    <div class="w3-margin-bottom">
+                        <label class="form-label-dark">Full Name</label>
+                        <input class="form-input-dark" type="text" name="full_name" placeholder="Your full name" required>
+                    </div>
+
+                    <div class="w3-margin-bottom">
+                        <label class="form-label-dark">Email</label>
+                        <input class="form-input-dark" type="email" name="email" id="emailInput" placeholder="your@email.com" required>
+                        <span class="error-msg" id="emailError" style="color: #ef4444; font-size: 12px; display: none; margin-top: 5px;">Please enter a valid email address.</span>
+                    </div>
+
+                    <div class="w3-margin-bottom">
+                        <label class="form-label-dark">Username</label>
+                        <input class="form-input-dark" type="text" name="username" placeholder="Choose a username" required>
+                    </div>
+
+                    <div class="w3-margin-bottom">
+                        <label class="form-label-dark">Password</label>
+                        <input class="form-input-dark" type="password" name="password" id="passwordInput" placeholder="Min 6 characters" required minlength="6">
+                        <div id="passwordStrength" style="height: 3px; border-radius: 2px; margin-top: 6px; transition: all 0.3s;"></div>
+                        <span class="error-msg" id="passwordError" style="color: #ef4444; font-size: 12px; display: none; margin-top: 5px;">Password must be at least 6 characters long.</span>
+                    </div>
+
+                    <button type="button" class="w3-button btn-primary transition w3-round w3-margin-top w3-block" onclick="goToStep2()">
+                        Next — Movie Preferences <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+                    </button>
+                </div>
+
+                <!-- Step 2: Movie Preferences -->
+                <div id="step2" style="display: none;">
+                    <p class="text-accent" style="font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 15px;">
+                        <i class="fa-solid fa-film" style="margin-right: 5px;"></i> STEP 2 — MOVIE PREFERENCES
+                    </p>
+
+                    <div class="w3-margin-bottom">
+                        <label class="form-label-dark">Favorite Genres</label>
+                        <div id="genreGrid" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px;">
+                        </div>
+                        <input type="hidden" name="favorite_genres" id="selectedGenres">
+                    </div>
+
+
+
+                    <div class="w3-margin-bottom">
+                        <label class="form-label-dark">How many movies do you watch per week?</label>
+                        <select name="movies_per_week" class="form-input-dark" style="cursor: pointer;">
+                            <option value="0">Less than 1</option>
+                            <option value="1">1-2 movies</option>
+                            <option value="3" selected>3-5 movies</option>
+                            <option value="6">6-10 movies</option>
+                            <option value="10">10+ movies</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="button" class="w3-button w3-round transition" 
+                            style="background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; flex: 1; padding: 12px;"
+                            onclick="goToStep1()">
+                            <i class="fa-solid fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="w3-button w3-round transition" 
+                            style="background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; flex: 1; padding: 12px;"
+                            onclick="document.getElementById('signupForm').submit()">
+                            Skip <i class="fa-solid fa-forward" style="margin-left: 8px;"></i>
+                        </button>
+                        <button type="submit" class="w3-button btn-primary transition w3-round" style="flex: 2; padding: 12px;">
+                            Create Account <i class="fa-solid fa-rocket" style="margin-left: 8px;"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="w3-center w3-margin-top">
+                    <p class="text-muted text-small">Already have an account? <a href="{{ url_for('login') }}"
+                            class="text-accent transition">Sign In</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const genres = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 
+                    'Drama', 'Family', 'Fantasy', 'History', 'Horror', 'Music', 
+                    'Mystery', 'Romance', 'Science Fiction', 'Thriller', 'War', 'Western'];
+    let selectedGenres = [];
+
+    const genreGrid = document.getElementById('genreGrid');
+    genres.forEach(g => {
+        const pill = document.createElement('button');
+        pill.type = 'button';
+        pill.className = 'genre-pill-btn';
+        pill.textContent = g;
+        pill.style.cssText = 'background:#27272a; color:#a1a1aa; border:1px solid #3f3f46; border-radius:20px; padding:6px 14px; font-size:12px; font-weight:500; cursor:pointer; transition:all 0.2s; font-family:Inter,sans-serif;';
+        pill.onclick = function() {
+            const idx = selectedGenres.indexOf(g);
+            if (idx > -1) {
+                selectedGenres.splice(idx, 1);
+                pill.style.backgroundColor = '#27272a';
+                pill.style.color = '#a1a1aa';
+                pill.style.borderColor = '#3f3f46';
+            } else {
+                selectedGenres.push(g);
+                pill.style.backgroundColor = 'rgba(250,204,21,0.15)';
+                pill.style.color = '#facc15';
+                pill.style.borderColor = '#facc15';
+            }
+            document.getElementById('selectedGenres').value = selectedGenres.join(',');
+        };
+        genreGrid.appendChild(pill);
+    });
+
+    // Password strength indicator
+    document.getElementById('passwordInput').addEventListener('input', function() {
+        const bar = document.getElementById('passwordStrength');
+        const val = this.value;
+        if (val.length < 4) { bar.style.width = '25%'; bar.style.backgroundColor = '#ef4444'; }
+        else if (val.length < 6) { bar.style.width = '50%'; bar.style.backgroundColor = '#f59e0b'; }
+        else if (val.length < 8) { bar.style.width = '75%'; bar.style.backgroundColor = '#3b82f6'; }
+        else { bar.style.width = '100%'; bar.style.backgroundColor = '#4ade80'; }
+    });
+
+    function goToStep2() {
+        // Validate step 1
+        const emailInput = document.getElementById('emailInput');
+        const emailError = document.getElementById('emailError');
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordError = document.getElementById('passwordError');
+        const inputs = document.querySelectorAll('#step1 input[required]');
+        
+        let valid = true;
+
+        inputs.forEach(i => { i.style.borderColor = '#333'; });
+        if (emailError) emailError.style.display = 'none';
+        if (passwordError) passwordError.style.display = 'none';
+
+        inputs.forEach(i => { 
+            if (!i.value.trim()) { 
+                i.style.borderColor = '#ef4444'; 
+                valid = false; 
+            } 
+        });
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailInput && emailInput.value.trim() && !emailRegex.test(emailInput.value.trim())) {
+            emailInput.style.borderColor = '#ef4444';
+            if (emailError) emailError.style.display = 'block';
+            valid = false;
+        }
+
+        if (passwordInput && passwordInput.value.length > 0 && passwordInput.value.length < 6) {
+            passwordInput.style.borderColor = '#ef4444';
+            if (passwordError) passwordError.style.display = 'block';
+            valid = false;
+        }
+
+        if (!valid) return;
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+    }
+
+    function goToStep1() {
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step1').style.display = 'block';
+    }
+</script>
+{% endblock %}

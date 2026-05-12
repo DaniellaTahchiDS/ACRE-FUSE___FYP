@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ACRE - FUSE{% endblock %}</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Watchlist Folder Modal Styles */
+        .folder-list {
+            margin-top: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .folder-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .folder-item:hover {
+            border-color: #facc15;
+            background: #3f3f46;
+        }
+        .folder-item i {
+            margin-right: 12px;
+            color: #facc15;
+        }
+        .create-folder-input {
+            width: 100%;
+            background: #121212;
+            border: 1px solid #3f3f46;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .create-folder-input:focus {
+            border-color: #facc15;
+            outline: none;
+        }
+        .btn-create-folder {
+            width: 100%;
+            background: #facc15;
+            color: #121212;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        .btn-create-folder:hover {
+            background: #eab308;
+        }
+        .modal-dark {
+            background-color: #1a1a1e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            max-width: 400px;
+            overflow: hidden;
+        }
+        .modal-header-dark {
+            padding: 20px 25px;
+            border-bottom: 1px solid #2a2a2e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-body-dark {
+            padding: 25px;
+        }
+
+        /* Improved Modal Centering */
+        .w3-modal {
+            padding-top: 50px;
+            padding-bottom: 50px;
+            display: none; /* Controlled by JS */
+        }
+        
+        .w3-modal.w3-show {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .w3-modal-content {
+            margin: 0 !important; /* Reset W3.CSS default margin */
+            position: relative;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="theme-dark">
+
+    <!-- Navigation Bar -->
+    <div class="w3-top" style="z-index: 999;">
+        <div class="w3-bar nav-bar w3-padding">
+            <a href="{{ url_for('home') }}" class="w3-bar-item w3-button w3-hover-none logo">
+                <i class="fa-solid fa-star text-accent"></i> ACRE - FUSE
+            </a>
+            <div class="w3-right w3-hide-small nav-links">
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Dashboard</a>
+                <a href="{{ url_for('recommend') }}"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Recommend</a>
+                <a href="{{ url_for('watchlist_page') }}"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">
+                    <i class="fa-solid fa-bookmark"></i> Watchlist</a>
+                <a href="{{ url_for('account') }}"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">
+                    <i class="fa-solid fa-user"></i></a>
+                {% else %}
+                <a href="{{ url_for('home') }}"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Home</a>
+                <a href="{{ url_for('login') }}" class="w3-bar-item w3-button btn-outline transition">Sign In</a>
+                {% endif %}
+            </div>
+            <a href="javascript:void(0)" class="w3-bar-item w3-button w3-right w3-hide-large w3-hide-medium"
+                onclick="toggleMenu()">&#9776;</a>
+        </div>
+        <div id="mobileMenu" class="w3-bar-block w3-hide w3-hide-large w3-hide-medium"
+            style="background-color: #1a1a1a; border-bottom: 1px solid #333;">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('recommend') }}" class="w3-bar-item w3-button" style="color:#e4e4e7;">Recommend</a>
+            <a href="{{ url_for('watchlist_page') }}" class="w3-bar-item w3-button" style="color:#e4e4e7;">Watchlist</a>
+            <a href="{{ url_for('account') }}" class="w3-bar-item w3-button" style="color:#e4e4e7;">Account</a>
+            <a href="{{ url_for('logout') }}" class="w3-bar-item w3-button" style="color:#e4e4e7;">Sign Out</a>
+            {% else %}
+            <a href="{{ url_for('home') }}" class="w3-bar-item w3-button" style="color:#e4e4e7;">Home</a>
+            <a href="{{ url_for('login') }}" class="w3-bar-item w3-button" style="color:#e4e4e7;">Sign In</a>
+            <a href="{{ url_for('signup') }}" class="w3-bar-item w3-button" style="color:#e4e4e7;">Sign Up</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <!-- Toast Notification System -->
+    <div id="toast" class="toast-notification">
+        <div class="toast-content">
+            <i id="toast-icon" class="fa-solid fa-check-circle toast-icon"></i>
+            <span id="toast-message"></span>
+        </div>
+        <a id="toast-action" class="toast-action" style="display:none;" href="#">View</a>
+    </div>
+    <!-- Watchlist Folder Modal -->
+    <div id="watchlistFolderModal" class="w3-modal" style="z-index: 1001;">
+        <div class="w3-modal-content w3-animate-zoom modal-dark" style="color: white;">
+            <div class="modal-header-dark">
+                <h3 style="font-family: 'Playfair Display', serif; color: #facc15; margin: 0; font-size: 20px;">Add to List</h3>
+                <span onclick="closeWatchlistFolderModal()"
+                    style="cursor: pointer; font-size: 22px; color: #a1a1aa;">&times;</span>
+            </div>
+            <div class="modal-body-dark">
+                <div id="existingFoldersTitle" style="font-size: 11px; color: #71717a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Your Lists</div>
+                <div id="folderList" class="folder-list">
+                    <!-- Folders will be loaded here -->
+                    <div class="folder-item" onclick="confirmAddToFolder(null)">
+                        <i class="fa-solid fa-bookmark"></i>
+                        <span>Default Watchlist</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; border-top: 1px solid #2a2a2e; padding-top: 20px;">
+                    <div style="font-size: 11px; color: #71717a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Create New List</div>
+                    <input type="text" id="newFolderName" class="create-folder-input" placeholder="List name...">
+                    <button class="btn-create-folder" onclick="createNewFolderAndAdd()">Create & Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Welcome Notification -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if category == 'welcome' %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            showToast("{{ message }}", 'welcome', 5000);
+        });
+    </script>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+
+    <script>
+        function toggleMenu() {
+            var x = document.getElementById("mobileMenu");
+            if (x.className.indexOf("w3-show") == -1) {
+                x.className += " w3-show";
+            } else {
+                x.className = x.className.replace(" w3-show", "");
+            }
+        }
+
+        function showToast(message, type, duration) {
+            type = type || 'success';
+            duration = duration || 3000;
+            var toast = document.getElementById("toast");
+            var msgEl = document.getElementById("toast-message");
+            var iconEl = document.getElementById("toast-icon");
+            var actionEl = document.getElementById("toast-action");
+
+            msgEl.innerHTML = message;
+            actionEl.style.display = 'none';
+
+            // Set icon based on type
+            if (type === 'welcome') {
+                iconEl.className = 'fa-solid fa-hand-sparkles toast-icon';
+                toast.className = 'toast-notification toast-welcome toast-show';
+            } else if (type === 'watchlist') {
+                iconEl.className = 'fa-solid fa-bookmark toast-icon';
+                toast.className = 'toast-notification toast-watchlist toast-show';
+                actionEl.style.display = 'inline-flex';
+                actionEl.href = '{{ url_for("watchlist_page") if current_user.is_authenticated else "#" }}';
+                actionEl.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Watchlist';
+            } else if (type === 'error') {
+                iconEl.className = 'fa-solid fa-circle-exclamation toast-icon';
+                toast.className = 'toast-notification toast-error toast-show';
+            } else {
+                iconEl.className = 'fa-solid fa-check-circle toast-icon';
+                toast.className = 'toast-notification toast-success toast-show';
+            }
+
+            clearTimeout(window._toastTimeout);
+            window._toastTimeout = setTimeout(function () {
+                toast.className = toast.className.replace(' toast-show', '');
+            }, duration);
+        }
+        let currentAddMovieId = null;
+        let currentAddRecommendedBy = null;
+        let currentAddSuccessCallback = null;
+
+        function openWatchlistFolderModal(movieId, recommendedBy, successCallback) {
+            currentAddMovieId = movieId;
+            currentAddRecommendedBy = recommendedBy;
+            currentAddSuccessCallback = successCallback;
+            
+            document.getElementById('newFolderName').value = '';
+            const modal = document.getElementById('watchlistFolderModal');
+            modal.style.display = 'flex';
+            modal.classList.add('w3-show');
+            
+            // Load folders
+            fetch('/api/folders')
+                .then(r => r.json())
+                .then(data => {
+                    const list = document.getElementById('folderList');
+                    list.innerHTML = `
+                        <div class="folder-item" onclick="confirmAddToFolder(null)">
+                            <i class="fa-solid fa-bookmark"></i>
+                            <span>Default Watchlist</span>
+                        </div>
+                    `;
+                    if (data.folders && data.folders.length > 0) {
+                        data.folders.forEach(f => {
+                            list.innerHTML += `
+                                <div class="folder-item" onclick="confirmAddToFolder(${f.id})">
+                                    <i class="fa-solid fa-folder"></i>
+                                    <span>${f.name}</span>
+                                </div>
+                            `;
+                        });
+                    }
+                });
+        }
+
+        function createNewFolderAndAdd() {
+            const name = document.getElementById('newFolderName').value.trim();
+            if (!name) return;
+            
+            fetch('/api/folders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    showToast(data.error, 'error');
+                } else {
+                    confirmAddToFolder(data.id);
+                }
+            });
+        }
+
+        function confirmAddToFolder(folderId) {
+            fetch('{{ url_for("watchlist_add") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    movie_id: currentAddMovieId, 
+                    recommended_by: currentAddRecommendedBy,
+                    folder_id: folderId
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                closeWatchlistFolderModal();
+                if (data.message) {
+                    showToast(data.message, data.already ? 'success' : 'watchlist');
+                    if (currentAddSuccessCallback) {
+                        currentAddSuccessCallback(data);
+                    }
+                } else if (data.error) {
+                    showToast(data.error, 'error');
+                }
+            });
+        }
+        function closeWatchlistFolderModal() {
+            const modal = document.getElementById('watchlistFolderModal');
+            modal.style.display = 'none';
+            modal.classList.remove('w3-show');
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

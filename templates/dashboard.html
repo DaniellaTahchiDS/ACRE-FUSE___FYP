@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}Performance Dashboard - ACRE - FUSE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    .chart-card {
+        background: #1a1a1e;
+        border: 1px solid #2a2a2e;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .chart-card:hover {
+        background: #1a1a1e;
+        border: 1px solid #eab308;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .chart-title {
+        font-family: 'Playfair Display', serif;
+        color: #facc15;
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .stat-summary {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .summary-card {
+        background: linear-gradient(135deg, #1a1a1e 0%, #1e1e28 100%);
+        border: 1px solid #2a2a2e;
+        border-radius: 12px;
+        padding: 20px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .summary-card:hover {
+        background: linear-gradient(135deg, #1a1a1e 0%, #1e1e28 100%);
+        border: 1px solid #eab308;
+        border-radius: 12px;
+        padding: 20px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .summary-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 5px;
+    }
+
+    .summary-label {
+        color: #a1a1aa;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .metric-badge {
+        background: rgba(250, 204, 21, 0.1);
+        color: #facc15;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 100px auto 50px; padding: 0 20px;">
+
+    <div style="margin-bottom: 40px;">
+        <h1 style="font-family: 'Playfair Display', serif; color: #facc15; font-size: 42px; margin: 0;">Performance
+            Dashboard</h1>
+        <p style="color: #a1a1aa; font-size: 16px; margin-top: 10px;">Comparative analysis of ACRE (Collaborative) and
+            FUSE (Hybrid) recommendation engines.</p>
+    </div>
+
+    <div class="stat-summary">
+        <div class="summary-card">
+            <div class="summary-value">{{ stats.total_reviews }}</div>
+            <div class="summary-label">Total Evaluations</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value" style="color: #facc15;">{{ stats.win_ratio.FUSE }}%</div>
+            <div class="summary-label">FUSE Preferred</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value" style="color: #e4e4e7;">{{ stats.win_ratio.ACRE }}%</div>
+            <div class="summary-label">ACRE Preferred</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-value" style="color: #4ade80;">{{ stats.avg_match }}/5</div>
+            <div class="summary-label">Avg. Match Quality</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Win Ratio Doughnut -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Preference Distribution</h3>
+                <span class="metric-badge">User Choice</span>
+            </div>
+            <div style="height: 300px;">
+                <canvas id="winRatioChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Metrics Comparison Radar -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Engine Capability Profile</h3>
+                <span class="metric-badge">Algorithm Metrics</span>
+            </div>
+            <div style="height: 300px;">
+                <canvas id="metricsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Satisfaction Bar -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">User Satisfaction Scores</h3>
+                <span class="metric-badge">Qualitative</span>
+            </div>
+            <div style="height: 300px;">
+                <canvas id="satisfactionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Semantic Novelty Comparison -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Diversity & Novelty Trade-off</h3>
+                <span class="metric-badge">Information Gain</span>
+            </div>
+            <div style="height: 300px;">
+                <canvas id="noveltyChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const stats = {{ stats | tojson }};
+
+    // Global Defaults
+    Chart.defaults.color = '#a1a1aa';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    // 1. Win Ratio Chart
+    new Chart(document.getElementById('winRatioChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['ACRE', 'FUSE'],
+            datasets: [{
+                data: [stats.win_ratio.ACRE, stats.win_ratio.FUSE],
+                backgroundColor: ['#3f3f46', '#facc15'],
+                borderWidth: 0,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // 2. Metrics Radar Chart
+    new Chart(document.getElementById('metricsChart'), {
+        type: 'radar',
+        data: {
+            labels: ['Diversity', 'Semantic Sim.', 'Novelty'],
+            datasets: [
+                {
+                    label: 'ACRE',
+                    data: [stats.metrics.ACRE.diversity, stats.metrics.ACRE.similarity, stats.metrics.ACRE.novelty],
+                    borderColor: '#71717a',
+                    backgroundColor: 'rgba(113, 113, 122, 0.2)',
+                    pointBackgroundColor: '#71717a'
+                },
+                {
+                    label: 'FUSE',
+                    data: [stats.metrics.FUSE.diversity, stats.metrics.FUSE.similarity, stats.metrics.FUSE.novelty],
+                    borderColor: '#facc15',
+                    backgroundColor: 'rgba(250, 204, 21, 0.2)',
+                    pointBackgroundColor: '#facc15'
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    grid: { color: '#2a2a2e' },
+                    angleLines: { color: '#2a2a2e' },
+                    suggestedMin: 0,
+                    suggestedMax: 1,
+                    ticks: {
+                        backdropColor: 'transparent',
+                        color: '#71717a',
+                        font: { size: 15 },
+                        callback: function (value) {
+                            return '                                             ' + value; // Shifts labels to the right
+                        }
+                    },
+                    pointLabels: {
+                        color: '#e4e4e7',
+                        font: {
+                            size: 13,
+                            weight: '600'
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 3. Satisfaction Chart
+    new Chart(document.getElementById('satisfactionChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Match Score', 'Familiarity'],
+            datasets: [{
+                label: 'Avg Score (1-5)',
+                data: [stats.avg_match, stats.avg_familiarity],
+                backgroundColor: ['#facc15', '#eab308'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 5, grid: { color: '#2a2a2e' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 4. Novelty/Diversity Bar Chart
+    new Chart(document.getElementById('noveltyChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Diversity', 'Novelty'],
+            datasets: [
+                {
+                    label: 'ACRE',
+                    data: [stats.metrics.ACRE.diversity, stats.metrics.ACRE.novelty],
+                    backgroundColor: '#3f3f46',
+                    borderRadius: 4
+                },
+                {
+                    label: 'FUSE',
+                    data: [stats.metrics.FUSE.diversity, stats.metrics.FUSE.novelty],
+                    backgroundColor: '#facc15',
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#2a2a2e' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+{% endblock %}

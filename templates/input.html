@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACRE - FUSE Select Missing Movies</title>
+
+    <!-- W3.CSS Framework -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding-bottom: 120px;
+            /* Space for sticky footer */
+        }
+
+
+        .text-accent {
+            color: #facc15 !important;
+        }
+
+        /* Yellow accent */
+        .text-muted {
+            color: #a1a1aa !important;
+        }
+
+        .bg-card {
+            background-color: #26262a !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <div class="w3-top" style="z-index: 999;">
+        <div class="w3-bar nav-bar w3-padding">
+            <a href="{{ url_for('home') }}" class="w3-bar-item w3-button w3-hover-none logo">
+                <i class="fa-solid fa-star text-accent"></i> ACRE - FUSE
+            </a>
+            <div class="w3-right w3-hide-small">
+                <a href="{{ url_for('home') }}"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Home</a>
+                <a href="{{ url_for('home') }}#concept"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Technology</a>
+                <a href="{{ url_for('home') }}#process"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Research</a>
+                <a href="{{ url_for('home') }}#contact"
+                    class="w3-bar-item w3-button w3-hover-none w3-hover-text-yellow transition">Contact</a>
+            </div>
+            <a href="javascript:void(0)" class="w3-bar-item w3-button w3-right w3-hide-large w3-hide-medium"
+                onclick="toggleMenu()">&#9776;</a>
+        </div>
+
+        <div id="mobileMenu" class="w3-bar-block w3-black w3-hide w3-hide-large w3-hide-medium">
+            <a href="{{ url_for('home') }}" class="w3-bar-item w3-button">Home</a>
+            <a href="{{ url_for('home') }}#concept" class="w3-bar-item w3-button">Technology</a>
+            <a href="{{ url_for('home') }}#process" class="w3-bar-item w3-button">Research</a>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="w3-container w3-center" style="margin-top: 100px; margin-bottom: 40px;">
+        <h1 style="font-weight: 700; font-size: 36px; margin-bottom: 12px;">Select Your Favorite Movies</h1>
+        <p style="font-size: 18px; color: #d4d4d8;">Pick <span class="text-accent" style="font-weight: 600;">3-5
+                movies</span> you love to help us find your unique taste profile.</p>
+
+        <div class="search-container w3-margin-top">
+            <i class="fa-solid fa-search"></i>
+            <input class="search-input" type="text" id="searchInput" placeholder="Search for movies..."
+                onkeyup="filterMovies()">
+        </div>
+    </div>
+
+    <!-- Movies Grid -->
+    <div class="w3-content w3-padding" style="max-width: 1200px;">
+        <div class="w3-row-padding" id="movieGrid">
+            {% for movie in movies %}
+            <div class="w3-col l3 m4 s6 w3-margin-bottom movie-item" data-title="{{ movie.title | lower }}">
+                <div class="movie-card" id="card-{{ movie.id }}"
+                    onclick="toggleSelection('{{ movie.id }}', '{{ movie.poster_path }}')">
+                    <div style="position: relative;">
+                        {% if movie.poster_path %}
+                        <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" alt="{{ movie.title }}">
+                        {% else %}
+                        <div
+                            style="width:100%; aspect-ratio: 2/3; background:#333; display:flex; align-items:center; justify-content:center; border-radius: 12px;">
+                            No Image</div>
+                        {% endif %}
+                        <div class="checkmark-badge"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                </div>
+                <div class="movie-info">
+                    <div class="movie-title" title="{{ movie.title }}">{{ movie.title }}</div>
+                    <div class="movie-year">{{ movie.release_year }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Sticky Selection Footer -->
+    <div class="sticky-footer">
+        <div class="footer-flex">
+            <!-- Left: Counter -->
+            <div style="min-width: 120px;">
+                <div class="selected-count-label">SELECTED</div>
+                <div>
+                    <span class="selected-count-value" id="countVal">0</span>
+                    <span class="selected-count-total"> / 5</span>
+                </div>
+            </div>
+
+            <!-- Middle: Slots -->
+            <div class="slots-container" id="slotsContainer">
+                <div class="slot" id="slot-1">+</div>
+                <div class="slot" id="slot-2">+</div>
+                <div class="slot" id="slot-3">+</div>
+                <div class="slot" id="slot-4">+</div>
+                <div class="slot" id="slot-5">+</div>
+            </div>
+
+            <!-- Right: Submit Button -->
+            <div style="min-width: 250px;">
+                <form id="recommendGroup" action="{{ url_for('recommend') }}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="selected_movies" id="selectedMoviesInput" value="[]">
+                    <button type="button" id="generateBtn" class="action-submit" onclick="submitSelection()">
+                        Get Recommendations <i class="fa-solid fa-rocket"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selections = [];
+        const MIN_SELECTION = 3;
+        const MAX_SELECTION = 5;
+
+        // Toggle mobile menu
+        function toggleMenu() {
+            var x = document.getElementById("mobileMenu");
+            if (x.className.indexOf("w3-show") == -1) {
+                x.className += " w3-show";
+            } else {
+                x.className = x.className.replace(" w3-show", "");
+            }
+        }
+
+        function toggleSelection(movieId, posterPath) {
+            const card = document.getElementById('card-' + movieId);
+            const index = selections.findIndex(s => s.id === movieId);
+
+            if (index > -1) {
+                // Remove
+                selections.splice(index, 1);
+                card.classList.remove('selected');
+            } else {
+                // Add
+                if (selections.length >= MAX_SELECTION) {
+                    return; // Max reached
+                }
+                selections.push({ id: movieId, posterPath: posterPath });
+                card.classList.add('selected');
+            }
+            updateFooter();
+        }
+
+        function updateFooter() {
+            const count = selections.length;
+            document.getElementById('countVal').innerText = count;
+
+            // Update slots
+            for (let i = 0; i < MAX_SELECTION; i++) {
+                const slotId = 'slot-' + (i + 1);
+                const slotEl = document.getElementById(slotId);
+
+                if (i < count) {
+                    const sel = selections[i];
+                    slotEl.classList.add('filled');
+                    if (sel.posterPath && sel.posterPath !== 'None') {
+                        slotEl.innerHTML = '<img src="https://image.tmdb.org/t/p/w200' + sel.posterPath + '" alt="Selected">';
+                    } else {
+                        slotEl.innerHTML = '<div style="background:#555;width:100%;height:100%;"></div>';
+                    }
+                } else {
+                    slotEl.classList.remove('filled');
+                    slotEl.innerHTML = '+';
+                }
+            }
+
+            // Update button state and hidden input
+            const btn = document.getElementById('generateBtn');
+            const input = document.getElementById('selectedMoviesInput');
+
+            const idsOnly = selections.map(s => s.id);
+            input.value = JSON.stringify(idsOnly);
+
+            if (count >= MIN_SELECTION && count <= MAX_SELECTION) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+
+        let searchTimeout = null;
+
+        function filterMovies() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.trim();
+
+            // Debounce the API call
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                fetch(`/api/search?q=${encodeURIComponent(filter)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        renderMovies(data.movies);
+                    })
+                    .catch(err => console.error('Error searching movies:', err));
+            }, 300); // 300ms delay
+        }
+
+        function renderMovies(movies) {
+            const grid = document.getElementById('movieGrid');
+            grid.innerHTML = '';
+
+            movies.forEach(movie => {
+                const isSelected = selections.some(s => s.id === movie.id);
+                const selectedClass = isSelected ? 'selected' : '';
+
+                let imgHtml = '';
+                if (movie.poster_path && movie.poster_path !== 'None') {
+                    imgHtml = `<img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}">`;
+                } else {
+                    imgHtml = `<div style="width:100%; aspect-ratio: 2/3; background:#333; display:flex; align-items:center; justify-content:center; border-radius: 12px;">No Image</div>`;
+                }
+
+                const colHtml = `
+                    <div class="w3-col l3 m4 s6 w3-margin-bottom movie-item" data-title="${movie.title.toLowerCase()}">
+                        <div class="movie-card ${selectedClass}" id="card-${movie.id}" onclick="toggleSelection('${movie.id}', '${movie.poster_path}')">
+                            <div style="position: relative;">
+                                ${imgHtml}
+                                <div class="checkmark-badge"><i class="fa-solid fa-check"></i></div>
+                            </div>
+                        </div>
+                        <div class="movie-info">
+                            <div class="movie-title" title="${movie.title}">${movie.title}</div>
+                            <div class="movie-year">${movie.release_year}</div>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', colHtml);
+            });
+        }
+
+        function submitSelection() {
+            if (selections.length >= MIN_SELECTION) {
+                document.getElementById('recommendGroup').submit();
+            }
+        }
+    </script>
+</body>
+
+</html>

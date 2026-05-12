@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Session Results - ACRE - FUSE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-container { max-width: 900px; margin: 80px auto 40px; padding: 0 20px; }
+    .page-title { font-family: 'Playfair Display', serif; font-size: 28px; color: #facc15; margin-bottom: 5px; }
+    
+    .movie-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 30px;
+    }
+
+    .poster-container {
+        display: inline-flex;
+        flex-direction: column;
+        width: 140px;
+        flex-shrink: 0;
+        gap: 8px;
+    }
+
+    .poster-container img {
+        width: 100%;
+        aspect-ratio: 2/3;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid #2a2a2e;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .poster-container img:hover {
+        border-color: #facc15;
+        transform: scale(1.05);
+    }
+
+    .poster-btn {
+        background: #27272a; color: #e4e4e7; border: 1px solid #3f3f46; border-radius: 6px;
+        padding: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        text-align: center; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .poster-btn:hover { background: #3f3f46; border-color: #facc15; color: #facc15; }
+    .poster-btn.success { color: #4ade80; border-color: #14532d; }
+    .poster-btn.success:hover { background: #14532d; color: white; border-color: #4ade80; }
+
+    .movie-modal { background-color: #1a1a1e; border: 1px solid #333; border-radius: 12px; max-width: 600px; overflow: hidden; color: white; }
+    .modal-poster { width: 150px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-wand-magic-sparkles" style="margin-right: 8px;"></i>Session Results</h1>
+            <p class="text-muted" style="font-size: 13px; margin: 0;">Recommendations from {{ session.created_at.strftime('%b %d, %Y') }}</p>
+        </div>
+        <a href="{{ url_for('account') }}" class="pill-btn" style="text-decoration: none;">
+            <i class="fa-solid fa-arrow-left"></i> Account
+        </a>
+    </div>
+
+    <div class="movie-grid">
+        {% for movie in movies %}
+        <div class="poster-container" id="session-movie-{{ movie.id }}">
+            <img src="https://image.tmdb.org/t/p/w200{{ movie.poster_path }}" onclick="openModal({{ movie.id }})">
+            {% if movie.id|int in watched_ids %}
+                <!-- Already watched -->
+            {% elif movie.id|int in watchlist_ids %}
+                <button class="poster-btn success" onclick="addWatchedDirect({{ movie.id }}, this)"><i class="fa-solid fa-check"></i> Watched</button>
+            {% else %}
+                <button class="poster-btn" onclick="addWatchlist({{ movie.id }}, this)"><i class="fa-solid fa-bookmark"></i> Watchlist</button>
+                <button class="poster-btn success" onclick="addWatchedDirect({{ movie.id }}, this)"><i class="fa-solid fa-check"></i> Watched</button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Movie Info Modal -->
+<div id="movieInfoModal" class="w3-modal" style="z-index: 1000;">
+    <div class="w3-modal-content w3-animate-zoom movie-modal">
+        <div class="modal-header-dark" style="border-bottom:none; padding-bottom:0;">
+            <span onclick="document.getElementById('movieInfoModal').style.display='none'" style="cursor:pointer;font-size:22px;color:#a1a1aa;float:right;">&times;</span>
+        </div>
+        <div class="modal-body-dark" style="display:flex; gap:20px; padding-top:0;">
+            <div style="flex-shrink:0; width: 150px;">
+                <img id="mModalPoster" src="" class="modal-poster">
+                <div id="mModalActions" style="display:flex; flex-direction:column; gap:8px; margin-top:15px;">
+                </div>
+            </div>
+            <div>
+                <h2 id="mModalTitle" style="font-family:'Playfair Display', serif; color:#facc15; margin:0 0 5px 0; font-size: 22px;"></h2>
+                <div id="mModalYear" style="color:#a1a1aa; font-size:14px; margin-bottom:15px;"></div>
+                <div id="mModalOverview" style="font-size:13px; line-height:1.6; color:#e4e4e7;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const movieData = {
+        {% for movie in movies %}
+        "{{ movie.id }}": {{ movie|tojson }},
+        {% endfor %}
+    };
+    
+    const watchlistIds = new Set({{ watchlist_ids | list | tojson }});
+    const watchedIds = new Set({{ watched_ids | list | tojson }});
+
+    function openModal(movieId) {
+        const m = movieData[movieId];
+        if(!m) return;
+        document.getElementById('mModalTitle').innerText = m.title;
+        document.getElementById('mModalYear').innerText = m.release_year;
+        document.getElementById('mModalPoster').src = "https://image.tmdb.org/t/p/w300" + m.poster_path;
+        document.getElementById('mModalOverview').innerText = m.overview;
+        
+        updateModalActions(movieId);
+        document.getElementById('movieInfoModal').style.display = 'block';
+    }
+
+    function updateModalActions(movieId) {
+        const mIdInt = parseInt(movieId);
+        let actionsHtml = '';
+        if (watchedIds.has(mIdInt)) {
+            // No buttons
+        } else if (watchlistIds.has(mIdInt)) {
+            actionsHtml += `<button class="poster-btn success" onclick="addWatchedDirect(${movieId}, this)"><i class="fa-solid fa-check"></i> Watched</button>`;
+        } else {
+            actionsHtml += `<button class="poster-btn" onclick="addWatchlist(${movieId}, this)"><i class="fa-solid fa-bookmark"></i> Watchlist</button>`;
+            actionsHtml += `<button class="poster-btn success" onclick="addWatchedDirect(${movieId}, this)"><i class="fa-solid fa-check"></i> Watched</button>`;
+        }
+        document.getElementById('mModalActions').innerHTML = actionsHtml;
+    }
+
+    function updateGridButtons(movieId) {
+        const container = document.getElementById('session-movie-' + movieId);
+        if (!container) return;
+        const img = container.querySelector('img');
+        const mIdInt = parseInt(movieId);
+        
+        let html = img.outerHTML;
+        if (watchedIds.has(mIdInt)) {
+        } else if (watchlistIds.has(mIdInt)) {
+            html += `<button class="poster-btn success" onclick="addWatchedDirect(${movieId}, this)"><i class="fa-solid fa-check"></i> Watched</button>`;
+        } else {
+            html += `<button class="poster-btn" onclick="addWatchlist(${movieId}, this)"><i class="fa-solid fa-bookmark"></i> Watchlist</button>`;
+            html += `<button class="poster-btn success" onclick="addWatchedDirect(${movieId}, this)"><i class="fa-solid fa-check"></i> Watched</button>`;
+        }
+        container.innerHTML = html;
+    }
+
+    function addWatchlist(movieId, btn) {
+        openWatchlistFolderModal(movieId, '', function(data) {
+            if(!data.already) {
+                watchlistIds.add(parseInt(movieId));
+                updateGridButtons(movieId);
+                if (document.getElementById('movieInfoModal').style.display === 'block') {
+                    updateModalActions(movieId);
+                }
+            }
+        });
+    }
+
+    function addWatchedDirect(movieId, btn) {
+        fetch('{{ url_for("watched_add_direct") }}', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({movie_id: movieId})
+        }).then(r => r.json()).then(data => {
+            if(data.success) {
+                showToast(data.message, 'success');
+                watchedIds.add(parseInt(movieId));
+                updateGridButtons(movieId);
+                if (document.getElementById('movieInfoModal').style.display === 'block') {
+                    updateModalActions(movieId);
+                }
+            }
+        });
+    }
+
+    window.onclick = function(event) {
+        if (event.target.className.indexOf('w3-modal') > -1) {
+            event.target.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

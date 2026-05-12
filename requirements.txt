@@ -1,0 +1,54 @@
+# Core Data Science Stack
+pandas
+numpy
+scikit-learn
+
+# Visualization
+matplotlib
+seaborn
+plotly
+
+# Dimensionality Reduction
+umap-learn
+
+# Persistence
+joblib
+
+# Progress Bars
+tqdm
+
+# Statistical Testing
+scipy
+
+# Jupyter
+notebook
+ipykernel
+
+# Type Checking (Development)
+mypy
+
+#flask
+flask
+flask-sqlalchemy
+flask-login
+flask-migrate
+flask-cors
+flask-limiter
+flask-session
+flask-socketio
+flask-caching
+
+#NLP
+nltk
+textblob
+rake_nltk
+contractions
+sentence-transformers
+spacy
+
+#save models
+joblib 
+
+# Chatbot
+google-genai
+python-dotenv

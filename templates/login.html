@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Login - ACRE - FUSE{% endblock %}
+
+{% block content %}
+<section class="w3-padding-64" style="min-height: 100vh; display: flex; align-items: center;">
+    <div class="w3-content w3-padding" style="max-width:500px; width: 100%;">
+        <div class="cta-card w3-round-xlarge w3-center" style="padding: 40px !important;">
+            <h2 class="section-title cta-title" style="font-size: 2.2rem; margin-bottom: 10px;">Welcome Back</h2>
+            <p class="text-muted" style="font-size: 14px; margin-bottom: 25px;">Sign in to continue your movie journey</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            {% if category != 'welcome' %}
+            <div class="w3-panel w3-round {% if category == 'error' %}w3-red{% else %}w3-green{% endif %} w3-padding">
+                <p>{{ message }}</p>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('login') }}" method="POST" class="w3-container w3-left-align">
+                <div class="w3-margin-bottom">
+                    <label class="form-label-dark">Username</label>
+                    <input class="form-input-dark" type="text" name="username" placeholder="Enter your username" required>
+                </div>
+
+                <div class="w3-margin-bottom">
+                    <label class="form-label-dark">Password</label>
+                    <input class="form-input-dark" type="password" name="password" placeholder="Enter your password" required>
+                </div>
+
+                <button type="submit" class="w3-button btn-primary transition w3-round w3-margin-top w3-block">
+                    Sign In <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+                </button>
+
+                <div class="w3-center w3-margin-top">
+                    <p class="text-muted text-small">Don't have an account? <a href="{{ url_for('signup') }}"
+                            class="text-accent transition">Sign Up</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
